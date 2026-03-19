@@ -659,8 +659,88 @@ body {
 }
 
 /* ========================================
-   ANIMATIONS
+   INTERACTION RISK COMPONENTS
    ======================================== */
+
+.interaction-risk-score {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.risk-score-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.risk-score-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.risk-score-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.risk-meter {
+    height: 12px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.risk-meter-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--success-color) 0%, var(--warning-color) 50%, var(--danger-color) 100%);
+    transition: width 1s ease;
+    box-shadow: 0 0 8px rgba(255, 0, 110, 0.4);
+}
+
+.risk-meter-fill.low {
+    background: linear-gradient(90deg, var(--success-color) 0%, var(--success-color) 100%);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.risk-meter-fill.medium {
+    background: linear-gradient(90deg, var(--warning-color) 0%, var(--warning-color) 100%);
+    box-shadow: 0 0 8px rgba(255, 214, 10, 0.4);
+}
+
+.risk-meter-fill.high {
+    background: linear-gradient(90deg, var(--danger-color) 0%, var(--danger-color) 100%);
+    box-shadow: 0 0 8px rgba(255, 0, 110, 0.4);
+}
+
+.interaction-risk-score.high-risk {
+    border-color: var(--danger-color);
+    background: rgba(255, 0, 110, 0.1);
+    box-shadow: 0 0 15px rgba(255, 0, 110, 0.2);
+}
+
+.interaction-risk-score.medium-risk {
+    border-color: var(--warning-color);
+    background: rgba(255, 214, 10, 0.1);
+    box-shadow: 0 0 15px rgba(255, 214, 10, 0.2);
+}
+
+.interaction-risk-score.low-risk {
+    border-color: var(--success-color);
+    background: rgba(0, 255, 136, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
 
 @keyframes pulse {
     0%, 100% {

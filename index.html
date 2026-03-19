@@ -60,6 +60,56 @@
                 </div>
 
                 <div class="control-group">
+                    <label for="existingConditions">Existing Conditions</label>
+                    <div class="multi-select-container">
+                        <div class="condition-tags" id="conditionTags">
+                            <span class="tag-placeholder">Select conditions...</span>
+                        </div>
+                        <select id="conditionSelect" class="dropdown" multiple>
+                            <option value="diabetes">Diabetes</option>
+                            <option value="hypertension">Hypertension</option>
+                            <option value="heart-disease">Heart Disease</option>
+                            <option value="liver-disease">Liver Disease</option>
+                            <option value="kidney-disease">Kidney Disease</option>
+                            <option value="asthma">Asthma</option>
+                            <option value="depression">Depression</option>
+                            <option value="anxiety">Anxiety</option>
+                            <option value="arthritis">Arthritis</option>
+                            <option value="migraine">Migraine</option>
+                            <option value="epilepsy">Epilepsy</option>
+                            <option value="thyroid">Thyroid Disorder</option>
+                            <option value="obesity">Obesity</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="currentMedications">Current Medications</label>
+                    <div class="multi-select-container">
+                        <div class="medication-tags" id="medicationTags">
+                            <span class="tag-placeholder">Select medications...</span>
+                        </div>
+                        <select id="medicationSelect" class="dropdown" multiple>
+                            <option value="aspirin">Aspirin</option>
+                            <option value="ibuprofen">Ibuprofen</option>
+                            <option value="acetaminophen">Acetaminophen</option>
+                            <option value="warfarin">Warfarin</option>
+                            <option value="lisinopril">Lisinopril</option>
+                            <option value="metformin">Metformin</option>
+                            <option value="atorvastatin">Atorvastatin</option>
+                            <option value="omeprazole">Omeprazole</option>
+                            <option value="albuterol">Albuterol</option>
+                            <option value="sertraline">Sertraline</option>
+                            <option value="amlodipine">Amlodipine</option>
+                            <option value="furosemide">Furosemide</option>
+                            <option value="prednisone">Prednisone</option>
+                            <option value="levothyroxine">Levothyroxine</option>
+                            <option value="gabapentin">Gabapentin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <label for="targetOrgan">Target Organ</label>
                     <select id="targetOrgan" class="dropdown">
                         <option value="liver">Liver</option>
@@ -217,6 +267,31 @@
                     <h3 class="section-subtitle">Dosing Recommendations</h3>
                     <div class="ai-text" id="aiDosing">
                         <p>Calculate dosing regimens once simulation runs...</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Drug Interaction Analysis</h3>
+                    <div class="interaction-risk-score" id="interactionRiskScore">
+                        <div class="risk-score-display">
+                            <span class="risk-score-label">Interaction Risk:</span>
+                            <span class="risk-score-value" id="riskScoreValue">Calculating...</span>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill" id="riskMeterFill"></div>
+                        </div>
+                    </div>
+                    <div class="ai-text" id="interactionAnalysis">
+                        <p>Select patient conditions and medications to analyze potential drug interactions...</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Personalized Recommendations</h3>
+                    <div class="ai-text" id="personalizedRecommendations">
+                        <ul class="suggestion-list">
+                            <li>Complete patient profile to receive personalized safety recommendations</li>
+                        </ul>
                     </div>
                 </div>
             </div>

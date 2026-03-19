@@ -10,6 +10,7 @@ const state = {
     toxicity: 15,
     patientAge: 45,
     targetOrgan: 'liver',
+<<<<<<< HEAD
     patientName: '',
     patientWeight: 70,
     conditions: [],
@@ -17,8 +18,14 @@ const state = {
     selectedDrugId: null,
     currentMeds: [],
     history: [],
+=======
+    existingConditions: [],
+    currentMedications: [],
+>>>>>>> 9d7574a (syncing code with github)
     simulationData: [],
-    isSimulating: false
+    isSimulating: false,
+    interactionRiskScore: 0,
+    interactionRiskLevel: 'low'
 };
 
 // Minimal drug database with real-world examples (for illustration)
@@ -201,6 +208,105 @@ function handleSliderChange(e) {
 
 function handleOrganChange(e) {
     state.targetOrgan = e.target.value;
+    updateInteractionAnalysis();
+}
+
+function handleConditionChange(e) {
+    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
+    state.existingConditions = selectedOptions;
+    updateConditionTags();
+    updateInteractionAnalysis();
+}
+
+function handleMedicationChange(e) {
+    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
+    state.currentMedications = selectedOptions;
+    updateMedicationTags();
+    updateInteractionAnalysis();
+}
+
+function updateConditionTags() {
+    const tagsContainer = document.getElementById('conditionTags');
+    const placeholder = tagsContainer.querySelector('.tag-placeholder');
+    
+    if (state.existingConditions.length === 0) {
+        if (!placeholder) {
+            tagsContainer.innerHTML = '<span class="tag-placeholder">Select conditions...</span>';
+        }
+        return;
+    }
+
+    if (placeholder) placeholder.remove();
+
+    const conditionNames = {
+        'diabetes': 'Diabetes',
+        'hypertension': 'Hypertension',
+        'heart-disease': 'Heart Disease',
+        'liver-disease': 'Liver Disease',
+        'kidney-disease': 'Kidney Disease',
+        'asthma': 'Asthma',
+        'depression': 'Depression',
+        'anxiety': 'Anxiety',
+        'arthritis': 'Arthritis',
+        'migraine': 'Migraine',
+        'epilepsy': 'Epilepsy',
+        'thyroid': 'Thyroid Disorder',
+        'obesity': 'Obesity'
+    };
+
+    tagsContainer.innerHTML = state.existingConditions.map(condition => 
+        `<span class="tag" data-value="${condition}">${conditionNames[condition]} <span class="tag-remove" onclick="removeCondition('${condition}')">×</span></span>`
+    ).join('');
+}
+
+function updateMedicationTags() {
+    const tagsContainer = document.getElementById('medicationTags');
+    const placeholder = tagsContainer.querySelector('.tag-placeholder');
+    
+    if (state.currentMedications.length === 0) {
+        if (!placeholder) {
+            tagsContainer.innerHTML = '<span class="tag-placeholder">Select medications...</span>';
+        }
+        return;
+    }
+
+    if (placeholder) placeholder.remove();
+
+    const medicationNames = {
+        'aspirin': 'Aspirin',
+        'ibuprofen': 'Ibuprofen',
+        'acetaminophen': 'Acetaminophen',
+        'warfarin': 'Warfarin',
+        'lisinopril': 'Lisinopril',
+        'metformin': 'Metformin',
+        'atorvastatin': 'Atorvastatin',
+        'omeprazole': 'Omeprazole',
+        'albuterol': 'Albuterol',
+        'sertraline': 'Sertraline',
+        'amlodipine': 'Amlodipine',
+        'furosemide': 'Furosemide',
+        'prednisone': 'Prednisone',
+        'levothyroxine': 'Levothyroxine',
+        'gabapentin': 'Gabapentin'
+    };
+
+    tagsContainer.innerHTML = state.currentMedications.map(medication => 
+        `<span class="tag" data-value="${medication}">${medicationNames[medication]} <span class="tag-remove" onclick="removeMedication('${medication}')">×</span></span>`
+    ).join('');
+}
+
+function removeCondition(condition) {
+    state.existingConditions = state.existingConditions.filter(c => c !== condition);
+    document.getElementById('conditionSelect').querySelector(`option[value="${condition}"]`).selected = false;
+    updateConditionTags();
+    updateInteractionAnalysis();
+}
+
+function removeMedication(medication) {
+    state.currentMedications = state.currentMedications.filter(m => m !== medication);
+    document.getElementById('medicationSelect').querySelector(`option[value="${medication}"]`).selected = false;
+    updateMedicationTags();
+    updateInteractionAnalysis();
 }
 
 // ========================================
