@@ -3,9 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Generative AI Drug Simulation Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚗️</span>
+                    Drug Simulation Engine
+                </h1>
+                <p class="tagline">AI-Powered Drug Discovery & Simulation</p>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard">
+            <!-- Left Panel: Input Controls -->
+            <div class="panel left-panel">
+                <h2 class="panel-title">Drug Parameters</h2>
+                
+                <div class="control-group">
+                    <label for="molecularSize">Molecular Size (Da)</label>
+                    <div class="slider-container">
+                        <input type="range" id="molecularSize" min="100" max="1000" value="350" class="slider">
+                        <span class="value-display" id="molecularSizeValue">350</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="solubility">Solubility Level (%)</label>
+                    <div class="slider-container">
+                        <input type="range" id="solubility" min="10" max="100" value="60" class="slider">
+                        <span class="value-display" id="solubilityValue">60</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="toxicity">Toxicity Level (%)</label>
+                    <div class="slider-container">
+                        <input type="range" id="toxicity" min="5" max="50" value="15" class="slider">
+                        <span class="value-display" id="toxicityValue">15</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="patientAge">Patient Age (years)</label>
+                    <div class="slider-container">
+                        <input type="range" id="patientAge" min="18" max="85" value="45" class="slider">
+                        <span class="value-display" id="patientAgeValue">45</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="targetOrgan">Target Organ</label>
+                    <select id="targetOrgan" class="dropdown">
+                        <option value="liver">Liver</option>
+                        <option value="brain">Brain</option>
+                        <option value="heart">Heart</option>
+                        <option value="kidney">Kidney</option>
+                        <option value="lungs">Lungs</option>
+                        <option value="intestines">Intestines</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="desiredOutcome">Desired Outcome (Optional)</label>
+                    <input type="text" id="desiredOutcome" class="text-input" placeholder="e.g., low side effect headache drug...">
+                    <button class="btn btn-secondary" id="autoGenerateBtn">Auto-Generate Parameters</button>
+                </div>
+
+                <button class="btn btn-primary" id="simulateBtn">
+                    <span class="btn-icon">▶</span>
+                    Run Simulation
+                </button>
+                
+                <button class="btn btn-reset" id="resetBtn">Reset Parameters</button>
+            </div>
+
+            <!-- Center Panel: Visualization -->
+            <div class="panel center-panel">
+                <h2 class="panel-title">Real-Time Simulation</h2>
+                
+                <div class="chart-container">
+                    <canvas id="concentrationChart"></canvas>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric">
+                        <label>Effectiveness</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="effectivenessBar"></div>
+                        </div>
+                        <span class="percentage" id="effectivenessValue">0%</span>
+                    </div>
+                </div>
+
+                <div class="risk-container">
+                    <label>Side Effect Risk</label>
+                    <div class="risk-indicator" id="riskIndicator">
+                        <span class="risk-label">Calculating...</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat">
+                        <span class="stat-label">Peak Concentration</span>
+                        <span class="stat-value" id="peakConcentration">0.0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Half-Life</span>
+                        <span class="stat-value" id="halfLife">0.0 hrs</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Bioavailability</span>
+                        <span class="stat-value" id="bioavailability">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Absorption Time</span>
+                        <span class="stat-value" id="absorptionTime">0.0 hrs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: AI Analysis -->
+            <div class="panel right-panel">
+                <h2 class="panel-title">AI Analysis & Recommendations</h2>
+                
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Drug Behavior Prediction</h3>
+                    <div class="ai-text" id="aiPrediction">
+                        <p>Adjust parameters and run simulation to generate AI analysis...</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Potential Risks & Side Effects</h3>
+                    <div class="ai-text" id="aiRisks">
+                        <p>Select parameters to analyze potential risks...</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Optimization Suggestions</h3>
+                    <div class="ai-text" id="aiSuggestions">
+                        <ul class="suggestion-list">
+                            <li>Run simulation to receive personalized recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Dosing Recommendations</h3>
+                    <div class="ai-text" id="aiDosing">
+                        <p>Calculate dosing regimens once simulation runs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
