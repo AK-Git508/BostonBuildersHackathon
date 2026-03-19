@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -76,6 +77,48 @@
                     <button class="btn btn-secondary" id="autoGenerateBtn">Auto-Generate Parameters</button>
                 </div>
 
+                <!-- Patient Profile Inputs -->
+                <div class="section-divider"></div>
+                <h2 class="panel-title" style="margin-top: 1.5rem;">Patient & Prescription</h2>
+
+                <div class="control-group">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" id="patientName" class="text-input" placeholder="e.g. Jane Doe">
+                </div>
+
+                <div class="control-group">
+                    <label for="patientWeight">Patient Weight (kg)</label>
+                    <div class="slider-container">
+                        <input type="range" id="patientWeight" min="40" max="150" value="70" class="slider">
+                        <span class="value-display" id="patientWeightValue">70</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="patientConditions">Known Conditions</label>
+                    <select id="patientConditions" class="dropdown" multiple size="5"></select>
+                </div>
+
+                <div class="control-group">
+                    <label for="patientAllergies">Allergies</label>
+                    <select id="patientAllergies" class="dropdown" multiple size="5"></select>
+                </div>
+
+                <div class="control-group">
+                    <label for="drugSelector">Select Medication</label>
+                    <select id="drugSelector" class="dropdown"></select>
+                </div>
+
+                <div class="control-group" style="display: flex; gap: 0.75rem; align-items: flex-end;">
+                    <button class="btn btn-secondary" id="addMedicationBtn" style="flex: 1;">Add to Active Meds</button>
+                    <button class="btn btn-primary" id="evaluateBtn" style="flex: 1;">Check Interactions</button>
+                </div>
+
+                <div class="control-group">
+                    <label>Current Medications</label>
+                    <div id="currentMedsList" class="pill-list"></div>
+                </div>
+
                 <button class="btn btn-primary" id="simulateBtn">
                     <span class="btn-icon">▶</span>
                     Run Simulation
@@ -141,6 +184,20 @@
                 </div>
 
                 <div class="analysis-section">
+                    <h3 class="section-subtitle">Prescription Safety Check</h3>
+                    <div class="ai-text" id="prescriptionSafety">
+                        <p>Use the patient profile and medication selector to evaluate drug interactions, allergies, and risk levels.</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="section-subtitle">Check History</h3>
+                    <div class="ai-text" id="historyLog">
+                        <p>No checks recorded yet. Run an interaction check to create a patient record.</p>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
                     <h3 class="section-subtitle">Potential Risks & Side Effects</h3>
                     <div class="ai-text" id="aiRisks">
                         <p>Select parameters to analyze potential risks...</p>
@@ -168,4 +225,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

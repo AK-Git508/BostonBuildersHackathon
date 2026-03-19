@@ -10,9 +10,131 @@ const state = {
     toxicity: 15,
     patientAge: 45,
     targetOrgan: 'liver',
+    patientName: '',
+    patientWeight: 70,
+    conditions: [],
+    allergies: [],
+    selectedDrugId: null,
+    currentMeds: [],
+    history: [],
     simulationData: [],
     isSimulating: false
 };
+
+// Minimal drug database with real-world examples (for illustration)
+const DRUG_DATABASE = [
+    {
+        id: 'amoxicillin',
+        name: 'Amoxicillin',
+        class: 'Penicillin antibiotic',
+        commonUses: ['Bacterial infections', 'Otitis media', 'Sinusitis'],
+        allergies: ['penicillin'],
+        contraindications: ['mononucleosis', 'penicillin allergy'],
+        interactions: {
+            warfarin: 'medium',
+            methotrexate: 'high',
+            oral_contraceptives: 'low'
+        },
+        precautions: [
+            'May increase INR when given with warfarin',
+            'Monitor renal function in patients with kidney impairment'
+        ],
+        alternatives: ['Azithromycin', 'Doxycycline']
+    },
+    {
+        id: 'ibuprofen',
+        name: 'Ibuprofen',
+        class: 'NSAID',
+        commonUses: ['Pain relief', 'Fever', 'Inflammation'],
+        allergies: ['nsaids'],
+        contraindications: ['peptic ulcer disease', 'renal impairment', 'asthma'],
+        interactions: {
+            warfarin: 'high',
+            lisinopril: 'medium',
+            lithium: 'medium',
+            aspirin: 'medium'
+        },
+        precautions: [
+            'May increase risk of gastrointestinal bleeding',
+            'Use with caution in patients with hypertension or renal disease'
+        ],
+        alternatives: ['Acetaminophen', 'Naproxen']
+    },
+    {
+        id: 'warfarin',
+        name: 'Warfarin',
+        class: 'Anticoagulant (Vitamin K antagonist)',
+        commonUses: ['Venous thromboembolism', 'Atrial fibrillation', 'Mechanical valves'],
+        allergies: [],
+        contraindications: ['bleeding disorders', 'pregnancy'],
+        interactions: {
+            aspirin: 'high',
+            ibuprofen: 'high',
+            amoxicillin: 'medium',
+            vitamin_k_rich_foods: 'low'
+        },
+        precautions: [
+            'Requires INR monitoring',
+            'Many drug-drug interactions; review every new medication'
+        ],
+        alternatives: ['Apixaban', 'Rivaroxaban']
+    },
+    {
+        id: 'metformin',
+        name: 'Metformin',
+        class: 'Biguanide',
+        commonUses: ['Type 2 diabetes mellitus'],
+        allergies: [],
+        contraindications: ['renal impairment', 'acute cardiac failure', 'lactic acidosis'],
+        interactions: {
+            cimetidine: 'medium',
+            contrast_dye: 'high'
+        },
+        precautions: [
+            'May cause lactic acidosis in renal impairment',
+            'Hold before imaging with iodinated contrast agents'
+        ],
+        alternatives: ['Glipizide', 'Pioglitazone']
+    },
+    {
+        id: 'lisinopril',
+        name: 'Lisinopril',
+        class: 'ACE inhibitor',
+        commonUses: ['Hypertension', 'Heart failure'],
+        allergies: [],
+        contraindications: ['pregnancy', 'angioedema history'],
+        interactions: {
+            potassium_supplements: 'high',
+            ibuprofen: 'medium',
+            spironolactone: 'medium'
+        },
+        precautions: [
+            'Monitor potassium and renal function',
+            'Avoid during pregnancy'
+        ],
+        alternatives: ['Losartan', 'Enalapril']
+    }
+];
+
+const CONDITION_OPTIONS = [
+    'Hypertension',
+    'Diabetes',
+    'Chronic kidney disease',
+    'Liver disease',
+    'Asthma',
+    'Bleeding disorder',
+    'Peptic ulcer disease',
+    'Pregnancy'
+];
+
+const ALLERGY_OPTIONS = [
+    'Penicillin',
+    'NSAIDs',
+    'Sulfa drugs',
+    'Latex',
+    'Eggs',
+    'Peanuts'
+];
 
 // Chart Instance
 let concentrationChart = null;
@@ -23,6 +145,7 @@ let concentrationChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
+    initializePrescriptionControls();
     initializeChart();
     updateAllOutputs();
 });
@@ -40,11 +163,26 @@ function initializeEventListeners() {
     document.getElementById('resetBtn').addEventListener('click', resetParameters);
     document.getElementById('autoGenerateBtn').addEventListener('click', autoGenerateParameters);
 
+    document.getElementById('patientName').addEventListener('input', handlePatientName);
+    document.getElementById('patientWeight').addEventListener('input', handleWeightChange);
+    document.getElementById('patientConditions').addEventListener('change', handleConditionsChange);
+    document.getElementById('patientAllergies').addEventListener('change', handleAllergiesChange);
+    document.getElementById('drugSelector').addEventListener('change', handleDrugSelection);
+    document.getElementById('addMedicationBtn').addEventListener('click', addMedicationToProfile);
+    document.getElementById('evaluateBtn').addEventListener('click', () => evaluatePrescriptionSafety(true));
+
+    // Real-time safety feedback
+    document.getElementById('patientWeight').addEventListener('input', () => evaluatePrescriptionSafety(false));
+    document.getElementById('patientConditions').addEventListener('change', () => evaluatePrescriptionSafety(false));
+    document.getElementById('patientAllergies').addEventListener('change', () => evaluatePrescriptionSafety(false));
+    document.getElementById('drugSelector').addEventListener('change', () => evaluatePrescriptionSafety(false));
+
     // Add real-time updates
     document.getElementById('molecularSize').addEventListener('input', updateAllOutputs);
     document.getElementById('solubility').addEventListener('input', updateAllOutputs);
     document.getElementById('toxicity').addEventListener('input', updateAllOutputs);
     document.getElementById('patientAge').addEventListener('input', updateAllOutputs);
+    document.getElementById('patientAge').addEventListener('input', () => evaluatePrescriptionSafety(false));
 }
 
 function handleSliderChange(e) {
@@ -160,6 +298,337 @@ function initializeChart() {
     });
 }
 
+function initializePrescriptionControls() {
+    // Populate condition and allergy selectors
+    const conditionSelect = document.getElementById('patientConditions');
+    CONDITION_OPTIONS.forEach(condition => {
+        const option = document.createElement('option');
+        option.value = condition;
+        option.textContent = condition;
+        conditionSelect.appendChild(option);
+    });
+
+    const allergySelect = document.getElementById('patientAllergies');
+    ALLERGY_OPTIONS.forEach(allergy => {
+        const option = document.createElement('option');
+        option.value = allergy;
+        option.textContent = allergy;
+        allergySelect.appendChild(option);
+    });
+
+    // Populate drug selector
+    const drugSelector = document.getElementById('drugSelector');
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = 'Select a medication...';
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    drugSelector.appendChild(placeholderOption);
+
+    DRUG_DATABASE.forEach(drug => {
+        const option = document.createElement('option');
+        option.value = drug.id;
+        option.textContent = `${drug.name} (${drug.class})`;
+        drugSelector.appendChild(option);
+    });
+
+    loadHistory();
+    renderCurrentMeds();
+    evaluatePrescriptionSafety();
+}
+
+function handlePatientName(e) {
+    state.patientName = e.target.value;
+}
+
+function handleWeightChange(e) {
+    const value = parseInt(e.target.value, 10);
+    state.patientWeight = value;
+    document.getElementById('patientWeightValue').textContent = value;
+}
+
+function handleConditionsChange(e) {
+    state.conditions = Array.from(e.target.selectedOptions).map(opt => opt.value);
+}
+
+function handleAllergiesChange(e) {
+    state.allergies = Array.from(e.target.selectedOptions).map(opt => opt.value);
+}
+
+function handleDrugSelection(e) {
+    state.selectedDrugId = e.target.value;
+}
+
+function getDrugById(id) {
+    return DRUG_DATABASE.find(d => d.id === id) || null;
+}
+
+function addMedicationToProfile() {
+    const drugId = state.selectedDrugId;
+    if (!drugId) {
+        alert('Please select a medication to add.');
+        return;
+    }
+
+    if (state.currentMeds.includes(drugId)) {
+        return;
+    }
+
+    state.currentMeds.push(drugId);
+    renderCurrentMeds();
+    evaluatePrescriptionSafety();
+}
+
+function removeMedicationFromProfile(drugId) {
+    state.currentMeds = state.currentMeds.filter(id => id !== drugId);
+    renderCurrentMeds();
+    evaluatePrescriptionSafety();
+}
+
+function renderCurrentMeds() {
+    const container = document.getElementById('currentMedsList');
+    container.innerHTML = '';
+
+    if (state.currentMeds.length === 0) {
+        container.innerHTML = '<span style="color: var(--text-muted);">No active medications selected.</span>';
+        return;
+    }
+
+    state.currentMeds.forEach(drugId => {
+        const drug = getDrugById(drugId);
+        if (!drug) return;
+
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.innerHTML = `${drug.name} <button type="button" aria-label="Remove ${drug.name}">&times;</button>`;
+        pill.querySelector('button').addEventListener('click', () => removeMedicationFromProfile(drugId));
+        container.appendChild(pill);
+    });
+}
+
+function evaluatePrescriptionSafety(saveHistory = false) {
+    const selectedDrug = getDrugById(state.selectedDrugId);
+    const currentDrugList = state.currentMeds.map(getDrugById).filter(Boolean);
+
+    const riskEntries = [];
+    let overallSeverity = 'low';
+
+    // Allergy checks
+    if (selectedDrug) {
+        const allergyMatch = state.allergies.some(allergy =>
+            selectedDrug.allergies.some(drugAllergy =>
+                drugAllergy.toLowerCase() === allergy.toLowerCase()
+            )
+        );
+
+        if (allergyMatch) {
+            overallSeverity = 'high';
+            riskEntries.push({
+                severity: 'high',
+                message: `Patient allergy detected: ${state.allergies.join(', ')}. ${selectedDrug.name} is contraindicated for this allergy.`,
+                why: `Because the patient has a known allergy, administration of ${selectedDrug.name} may trigger a severe hypersensitivity reaction.`
+            });
+        }
+    }
+
+    // Condition contradictions
+    if (selectedDrug) {
+        state.conditions.forEach(condition => {
+            const normalizedCondition = condition.toLowerCase();
+            const contraindicated = selectedDrug.contraindications.some(c => c.toLowerCase() === normalizedCondition);
+            if (contraindicated) {
+                overallSeverity = 'high';
+                riskEntries.push({
+                    severity: 'high',
+                    message: `${selectedDrug.name} is contraindicated in patients with ${condition}.`,
+                    why: `${selectedDrug.name} can worsen ${condition} or increase the risk of serious complications when used in this setting.`
+                });
+            }
+        });
+    }
+
+    // Interaction checks between selected drug and current meds
+    if (selectedDrug) {
+        currentDrugList.forEach(otherDrug => {
+            const severity = getInteractionSeverity(selectedDrug, otherDrug);
+            if (severity) {
+                if (severity === 'high') overallSeverity = 'high';
+                else if (severity === 'medium' && overallSeverity !== 'high') overallSeverity = 'medium';
+                riskEntries.push({
+                    severity,
+                    message: `${selectedDrug.name} has a ${severity} interaction with ${otherDrug.name}.`,
+                    why: `Concurrent use may increase risk of adverse effects or alter therapeutic levels of either drug.`
+                });
+            }
+        });
+    }
+
+    // Weight / age based guidance
+    if (state.patientWeight < 50) {
+        overallSeverity = overallSeverity === 'high' ? 'high' : 'medium';
+        riskEntries.push({
+            severity: 'medium',
+            message: 'Patient weight is below average (<50kg) which may affect dosing.',
+            why: 'Lower body mass can increase drug exposure, requiring careful dose adjustment.'
+        });
+    }
+
+    if (state.patientAge > 75) {
+        overallSeverity = overallSeverity === 'high' ? 'high' : 'medium';
+        riskEntries.push({
+            severity: 'medium',
+            message: 'Advanced age (>75 yrs) may increase risk of side effects.',
+            why: 'Older adults often have reduced renal/hepatic clearance and are more sensitive to medications.'
+        });
+    }
+
+    // Build output
+    const badge = `<span class="risk-badge ${overallSeverity}">${overallSeverity.toUpperCase()} RISK</span>`;
+    const summaryLines = [];
+
+    if (!selectedDrug) {
+        summaryLines.push('<p>Please select a medication to analyze.</p>');
+    } else {
+        summaryLines.push(`<p><strong>Medication:</strong> ${selectedDrug.name} (${selectedDrug.class})</p>`);
+        if (selectedDrug.commonUses?.length) {
+            summaryLines.push(`<p><strong>Common Uses:</strong> ${selectedDrug.commonUses.join(', ')}</p>`);
+        }
+        summaryLines.push(`<p><strong>Risk Level:</strong> ${badge}</p>`);
+        if (riskEntries.length === 0) {
+            summaryLines.push('<p>No significant interactions or contraindications detected. Continue to monitor clinically.</p>');
+        } else {
+            summaryLines.push('<ul class="suggestion-list">');
+            riskEntries.slice(0, 5).forEach(entry => {
+                summaryLines.push(`<li><strong>${entry.message}</strong><br><em>Why:</em> ${entry.why}</li>`);
+            });
+            summaryLines.push('</ul>');
+        }
+        if (selectedDrug.alternatives?.length) {
+            summaryLines.push(`<p><strong>Suggested alternatives:</strong> ${selectedDrug.alternatives.join(', ')}</p>`);
+        }
+        const precautions = selectedDrug.precautions || [];
+        if (precautions.length) {
+            summaryLines.push(`<p><strong>Suggested precautions:</strong></p><ul class="suggestion-list">${precautions.slice(0, 3).map(p => `<li>${p}</li>`).join('')}</ul>`);
+        }
+    }
+
+    document.getElementById('prescriptionSafety').innerHTML = summaryLines.join('');
+
+    // Visual validation: highlight the drug selector when high risk is detected
+    const drugSelector = document.getElementById('drugSelector');
+    if (overallSeverity === 'high') {
+        drugSelector.classList.add('input-warning');
+    } else {
+        drugSelector.classList.remove('input-warning');
+    }
+
+    // Store in history only when explicitly requested (via button click)
+    if (saveHistory && state.patientName.trim() && selectedDrug) {
+        const record = {
+            timestamp: new Date().toISOString(),
+            patientName: state.patientName.trim(),
+            age: state.patientAge,
+            weight: state.patientWeight,
+            conditions: state.conditions.slice(),
+            allergies: state.allergies.slice(),
+            medication: selectedDrug.name,
+            risk: overallSeverity,
+            notes: riskEntries.map(r => r.message)
+        };
+        saveHistoryRecord(record);
+    }
+}
+
+function getInteractionSeverity(drugA, drugB) {
+    const keyA = drugB.id;
+    const keyB = drugA.id;
+
+    // Check both directions for stored interactions
+    const severityA = drugA.interactions?.[keyA] || null;
+    const severityB = drugB.interactions?.[keyB] || null;
+    const severity = severityA || severityB;
+
+    if (!severity) return null;
+
+    if (['high', 'medium', 'low'].includes(severity)) {
+        return severity;
+    }
+
+    // Normalize non-standard names
+    if (typeof severity === 'string') {
+        const s = severity.toLowerCase();
+        if (s.includes('high')) return 'high';
+        if (s.includes('medium') || s.includes('mod')) return 'medium';
+        return 'low';
+    }
+
+    return null;
+}
+
+function saveHistoryRecord(record) {
+    const maxRecords = 20;
+    state.history.unshift(record);
+    if (state.history.length > maxRecords) {
+        state.history = state.history.slice(0, maxRecords);
+    }
+    localStorage.setItem('drugSimulationHistory', JSON.stringify(state.history));
+    renderHistoryLog();
+}
+
+function loadHistory() {
+    const stored = localStorage.getItem('drugSimulationHistory');
+    if (!stored) {
+        state.history = [];
+        return;
+    }
+    try {
+        state.history = JSON.parse(stored) || [];
+    } catch (e) {
+        state.history = [];
+    }
+    renderHistoryLog();
+}
+
+function renderHistoryLog() {
+    const container = document.getElementById('historyLog');
+    if (!container) return;
+
+    if (!state.history.length) {
+        container.innerHTML = '<p>No checks recorded yet. Run an interaction check to create a patient record.</p>';
+        return;
+    }
+
+    const rows = state.history.slice(0, 8).map(record => {
+        const date = new Date(record.timestamp);
+        return `
+            <div class="history-row">
+                <div><strong>${record.patientName}</strong> <br><span style="color: var(--text-muted); font-size:0.85rem;">${formatTimestamp(date)}</span></div>
+                <div>${record.medication}</div>
+                <div><span class="risk-badge ${record.risk}">${record.risk.toUpperCase()}</span></div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="history-header">
+            <div>Patient</div>
+            <div>Medication</div>
+            <div>Risk</div>
+        </div>
+        ${rows}
+    `;
+}
+
+function formatTimestamp(date) {
+    return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
 function generateTimeLabels(hours) {
     const labels = [];
     for (let i = 0; i <= hours; i++) {
@@ -194,6 +663,9 @@ function runSimulation() {
 
     // Generate AI analysis
     generateAIAnalysis();
+
+    // Also refresh the prescription safety view based on latest patient/drug data
+    evaluatePrescriptionSafety(false);
 
     state.isSimulating = false;
 }
@@ -580,6 +1052,14 @@ function resetParameters() {
         targetOrgan: 'liver'
     };
 
+    // Reset patient profile
+    state.patientName = '';
+    state.patientWeight = 70;
+    state.conditions = [];
+    state.allergies = [];
+    state.selectedDrugId = null;
+    state.currentMeds = [];
+
     // Update sliders
     document.getElementById('molecularSize').value = defaults.molecularSize;
     document.getElementById('molecularSizeValue').textContent = defaults.molecularSize;
@@ -592,6 +1072,15 @@ function resetParameters() {
 
     document.getElementById('patientAge').value = defaults.patientAge;
     document.getElementById('patientAgeValue').textContent = defaults.patientAge;
+
+    document.getElementById('patientName').value = '';
+    document.getElementById('patientWeight').value = state.patientWeight;
+    document.getElementById('patientWeightValue').textContent = state.patientWeight;
+    const conditionsSelect = document.getElementById('patientConditions');
+    Array.from(conditionsSelect.options).forEach(o => (o.selected = false));
+    const allergiesSelect = document.getElementById('patientAllergies');
+    Array.from(allergiesSelect.options).forEach(o => (o.selected = false));
+    document.getElementById('drugSelector').selectedIndex = 0;
 
     document.getElementById('targetOrgan').value = defaults.targetOrgan;
     document.getElementById('desiredOutcome').value = '';
@@ -619,6 +1108,9 @@ function resetParameters() {
     document.getElementById('halfLife').textContent = '0.0 hrs';
     document.getElementById('bioavailability').textContent = '0%';
     document.getElementById('absorptionTime').textContent = '0.0 hrs';
+
+    renderCurrentMeds();
+    evaluatePrescriptionSafety();
 
     updateRiskIndicator();
 }

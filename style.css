@@ -194,6 +194,102 @@ body {
     margin-bottom: 1.8rem;
 }
 
+.section-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 1.5rem 0;
+    border-radius: 1px;
+}
+
+.pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    min-height: 52px;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.pill button {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.pill button:hover {
+    color: var(--danger-color);
+}
+
+.history-row {
+    padding: 0.6rem 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 0.8fr;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.history-row:last-child {
+    border-bottom: none;
+}
+
+.history-header {
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 0.6rem 0.4rem;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 0.8fr;
+    gap: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.6px;
+}
+
+.risk-badge.low {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--success-color);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.risk-badge.medium {
+    background: rgba(255, 214, 10, 0.15);
+    color: var(--warning-color);
+    border: 1px solid rgba(255, 214, 10, 0.4);
+}
+
+.risk-badge.high {
+    background: rgba(255, 0, 110, 0.15);
+    color: var(--danger-color);
+    border: 1px solid rgba(255, 0, 110, 0.4);
+}
+
 .control-group label {
     display: block;
     font-size: 0.9rem;
@@ -301,6 +397,11 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+}
+
+.input-warning {
+    border-color: var(--danger-color) !important;
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.35) !important;
 }
 
 /* ========================================
