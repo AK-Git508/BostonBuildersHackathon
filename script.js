@@ -931,6 +931,8 @@ function generateAIAnalysis() {
     generateRiskAnalysis();
     generateOptimizationSuggestions();
     generateDosingRecommendations();
+    generateInteractionAnalysis();
+    generatePersonalizedRecommendations();
 }
 
 function generateDrugBehaviorPrediction() {
