@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drug Simulation Engine — AI-Powered</title>
+    <title>Drug Interaction Lab — AI-Powered Simulation</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,359 +13,388 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <div class="app-container">
-        <!-- Header -->
+
+        <!-- ====================================================
+             HEADER
+             ==================================================== -->
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
                     <h1 class="logo">
-                        <span class="logo-icon">⚗️</span>
-                        Drug Simulation Engine
+                        <span class="logo-icon">🔬</span>
+                        Drug Interaction Lab
                     </h1>
-                    <p class="tagline">AI-Powered Drug Discovery & Simulation · OpenFDA Integration · Claude AI Analysis</p>
+                    <p class="tagline">Interactive PK Simulation · OpenFDA + RxNorm Data · Claude AI Analysis</p>
                 </div>
+
+                <div class="header-center">
+                    <nav class="tab-nav" role="tablist">
+                        <button class="tab-btn active" data-tab="simulation" role="tab" aria-selected="true">
+                            ⚗️ Simulation Lab
+                        </button>
+                        <button class="tab-btn" data-tab="ai-chat" role="tab" aria-selected="false">
+                            🤖 AI Insights
+                        </button>
+                    </nav>
+                </div>
+
                 <div class="header-right">
                     <div class="api-status" id="apiStatus">
                         <span class="status-dot" id="statusDot"></span>
                         <span id="statusText">Connecting...</span>
                     </div>
-                    <button class="btn-header" id="reportBtn" title="Generate PDF Report">
-                        📄 Generate Report
-                    </button>
+                    <button class="btn-header" id="reportBtn" title="Generate report">📄 Report</button>
                 </div>
             </div>
         </header>
 
-        <!-- Main Dashboard -->
-        <div class="dashboard">
+        <!-- ====================================================
+             TAB: SIMULATION LAB
+             ==================================================== -->
+        <div id="simulationTab" class="tab-content active">
+            <div class="dashboard">
 
-            <!-- ==============================
-                 LEFT PANEL: Input Controls
-                 ============================== -->
-            <div class="panel left-panel">
-                <h2 class="panel-title">Drug Parameters</h2>
-
-                <!-- Drug Properties Sliders -->
-                <div class="control-group">
-                    <label for="molecularSize">Molecular Size (Da)</label>
-                    <div class="slider-container">
-                        <input type="range" id="molecularSize" min="100" max="1000" value="350" class="slider">
-                        <span class="value-display" id="molecularSizeValue">350</span>
+                <!-- LEFT PANEL: Drug Controls -->
+                <div class="panel left-panel">
+                    <div class="panel-header-row">
+                        <h2 class="panel-title">💊 Drug Setup</h2>
+                        <button class="btn-icon-sm" id="addDrugBtn" title="Add drug slot (max 3)">+ Add Drug</button>
                     </div>
-                </div>
 
-                <div class="control-group">
-                    <label for="solubility">Solubility Level (%)</label>
-                    <div class="slider-container">
-                        <input type="range" id="solubility" min="10" max="100" value="60" class="slider">
-                        <span class="value-display" id="solubilityValue">60</span>
-                    </div>
-                </div>
+                    <!-- Drug Slots Container -->
+                    <div id="drugSlots" class="drug-slots"></div>
 
-                <div class="control-group">
-                    <label for="toxicity">Toxicity Level (%)</label>
-                    <div class="slider-container">
-                        <input type="range" id="toxicity" min="5" max="50" value="15" class="slider">
-                        <span class="value-display" id="toxicityValue">15</span>
-                    </div>
-                </div>
+                    <div class="section-divider"></div>
 
-                <div class="control-group">
-                    <label for="patientAge">Patient Age (years)</label>
-                    <div class="slider-container">
-                        <input type="range" id="patientAge" min="18" max="85" value="45" class="slider">
-                        <span class="value-display" id="patientAgeValue">45</span>
-                    </div>
-                </div>
+                    <!-- Patient Profile -->
+                    <h3 class="section-title">👤 Patient Profile</h3>
 
-                <div class="control-group">
-                    <label for="targetOrgan">Target Organ</label>
-                    <select id="targetOrgan" class="dropdown">
-                        <option value="liver">Liver</option>
-                        <option value="brain">Brain</option>
-                        <option value="heart">Heart</option>
-                        <option value="kidney">Kidney</option>
-                        <option value="lungs">Lungs</option>
-                        <option value="intestines">Intestines</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="existingConditions">Existing Conditions</label>
-                    <div class="multi-select-container">
-                        <div class="condition-tags" id="conditionTags">
-                            <span class="tag-placeholder">Select conditions...</span>
+                    <div class="control-group">
+                        <label for="patientAge">Age (years)</label>
+                        <div class="slider-container">
+                            <input type="range" id="patientAge" min="18" max="85" value="45" class="slider">
+                            <span class="value-display" id="patientAgeValue">45</span>
                         </div>
-                        <select id="conditionSelect" class="dropdown" multiple>
-                            <option value="diabetes">Diabetes</option>
-                            <option value="hypertension">Hypertension</option>
-                            <option value="heart-disease">Heart Disease</option>
-                            <option value="liver-disease">Liver Disease</option>
-                            <option value="kidney-disease">Kidney Disease</option>
-                            <option value="asthma">Asthma</option>
-                            <option value="depression">Depression</option>
-                            <option value="anxiety">Anxiety</option>
-                            <option value="arthritis">Arthritis</option>
-                            <option value="migraine">Migraine</option>
-                            <option value="epilepsy">Epilepsy</option>
-                            <option value="thyroid">Thyroid Disorder</option>
-                            <option value="obesity">Obesity</option>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="patientWeight">Weight (kg)</label>
+                        <div class="slider-container">
+                            <input type="range" id="patientWeight" min="40" max="150" value="70" class="slider">
+                            <span class="value-display" id="patientWeightValue">70</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="kidneyFunction">Kidney Function (eGFR %)</label>
+                        <div class="slider-container">
+                            <input type="range" id="kidneyFunction" min="10" max="100" value="100" class="slider">
+                            <span class="value-display" id="kidneyFunctionValue">100</span>
+                        </div>
+                        <span class="field-hint" id="kidneyHint"></span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="liverFunction">Liver Function</label>
+                        <select id="liverFunction" class="dropdown">
+                            <option value="normal">Normal</option>
+                            <option value="mild">Mild Impairment (Child-Pugh A)</option>
+                            <option value="moderate">Moderate Impairment (Child-Pugh B)</option>
+                            <option value="severe">Severe / Cirrhosis (Child-Pugh C)</option>
                         </select>
                     </div>
+
+                    <div class="section-divider"></div>
+
+                    <button class="btn btn-primary" id="simulateBtn">
+                        <span class="btn-icon">▶</span> Run Simulation
+                    </button>
+
+                    <button class="btn btn-reset" id="resetBtn">↺ Reset All</button>
                 </div>
 
-                <div class="control-group">
-                    <label for="currentMedications">Current Medications (simulation context)</label>
-                    <div class="multi-select-container">
-                        <div class="medication-tags" id="medicationTags">
-                            <span class="tag-placeholder">Select medications...</span>
+                <!-- CENTER PANEL: Visualization -->
+                <div class="panel center-panel">
+                    <!-- Viz mode toggle -->
+                    <div class="viz-tabs">
+                        <button class="viz-tab active" data-viz="chart">📈 Concentration Curves</button>
+                        <button class="viz-tab" data-viz="body">🫀 Body Distribution</button>
+                    </div>
+
+                    <!-- Interaction Alert Banner -->
+                    <div id="interactionBanner" class="interaction-banner" style="display:none;"></div>
+
+                    <!-- Concentration Chart View -->
+                    <div id="chartView" class="viz-view active">
+                        <div class="chart-container">
+                            <div class="chart-loading" id="chartLoading" style="display:none;">
+                                <div class="spinner"></div>
+                                <span>Simulating pharmacokinetics...</span>
+                            </div>
+                            <canvas id="concentrationChart"></canvas>
                         </div>
-                        <select id="medicationSelect" class="dropdown" multiple>
-                            <option value="aspirin">Aspirin</option>
-                            <option value="ibuprofen">Ibuprofen</option>
-                            <option value="acetaminophen">Acetaminophen</option>
-                            <option value="warfarin">Warfarin</option>
-                            <option value="lisinopril">Lisinopril</option>
-                            <option value="metformin">Metformin</option>
-                            <option value="atorvastatin">Atorvastatin</option>
-                            <option value="omeprazole">Omeprazole</option>
-                            <option value="albuterol">Albuterol</option>
-                            <option value="sertraline">Sertraline</option>
-                            <option value="amlodipine">Amlodipine</option>
-                            <option value="furosemide">Furosemide</option>
-                            <option value="prednisone">Prednisone</option>
-                            <option value="levothyroxine">Levothyroxine</option>
-                            <option value="gabapentin">Gabapentin</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="control-group">
-                    <label for="desiredOutcome">Desired Outcome (Optional)</label>
-                    <input type="text" id="desiredOutcome" class="text-input" placeholder="e.g., low side effect headache drug...">
-                    <button class="btn btn-secondary" id="autoGenerateBtn" style="margin-top:0.6rem;">Auto-Generate Parameters</button>
-                </div>
-
-                <!-- Divider -->
-                <div class="section-divider"></div>
-                <h2 class="panel-title" style="margin-top: 1.5rem;">Patient &amp; Prescription</h2>
-
-                <div class="control-group">
-                    <label for="patientName">Patient Name</label>
-                    <input type="text" id="patientName" class="text-input" placeholder="e.g. Jane Doe">
-                </div>
-
-                <div class="control-group">
-                    <label for="patientWeight">Patient Weight (kg)</label>
-                    <div class="slider-container">
-                        <input type="range" id="patientWeight" min="40" max="150" value="70" class="slider">
-                        <span class="value-display" id="patientWeightValue">70</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label for="patientConditions">Known Conditions</label>
-                    <select id="patientConditions" class="dropdown" multiple size="4"></select>
-                </div>
-
-                <div class="control-group">
-                    <label for="patientAllergies">Allergies</label>
-                    <select id="patientAllergies" class="dropdown" multiple size="4"></select>
-                </div>
-
-                <!-- FDA Drug Search Autocomplete -->
-                <div class="control-group">
-                    <label>Search Medication (OpenFDA Live Search)</label>
-                    <div class="autocomplete-wrapper">
-                        <input type="text" id="fdaDrugSearch" class="text-input" placeholder="Type to search real FDA drug database..." autocomplete="off">
-                        <div class="autocomplete-spinner" id="searchSpinner" style="display:none;">
-                            <div class="spinner-small"></div>
+                        <div class="metrics-row">
+                            <div class="metric-card">
+                                <span class="metric-label">Drugs Selected</span>
+                                <span class="metric-value" id="drugsActiveVal">0</span>
+                                <span class="metric-unit">active</span>
+                            </div>
+                            <div class="metric-card" id="metricInteraction">
+                                <span class="metric-label">Interaction Level</span>
+                                <span class="metric-value" id="interactionLevelVal">—</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Time to Peak</span>
+                                <span class="metric-value" id="tmaxVal">—</span>
+                                <span class="metric-unit">hours</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Simulation</span>
+                                <span class="metric-value" id="simDurationVal">48</span>
+                                <span class="metric-unit">hours</span>
+                            </div>
                         </div>
-                        <div class="autocomplete-list" id="fdaAutocomplete"></div>
+
+                        <!-- PK Summary Table -->
+                        <div id="pkSummary" class="pk-summary" style="display:none;">
+                            <h3 class="section-subtitle">Pharmacokinetic Summary</h3>
+                            <div id="pkGrid" class="pk-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Body Distribution View -->
+                    <div id="bodyView" class="viz-view" style="display:none;">
+                        <div class="body-container">
+                            <div class="body-svg-wrapper">
+                                <svg id="bodySVG" viewBox="0 0 240 520" class="body-svg" aria-label="Human body diagram showing drug distribution">
+
+                                    <!-- Head -->
+                                    <ellipse cx="120" cy="52" rx="42" ry="46" class="body-outline"/>
+
+                                    <!-- Brain highlight -->
+                                    <ellipse cx="120" cy="44" rx="34" ry="28" class="organ" id="organBrain" data-organ="brain" data-label="Brain / CNS"/>
+
+                                    <!-- Eyes (decorative) -->
+                                    <circle cx="108" cy="48" r="4" class="organ-detail"/>
+                                    <circle cx="132" cy="48" r="4" class="organ-detail"/>
+
+                                    <!-- Neck -->
+                                    <rect x="109" y="94" width="22" height="26" rx="4" class="body-outline"/>
+
+                                    <!-- Torso -->
+                                    <path d="M52 120 C38 130 32 150 34 175 L38 300 C40 315 52 325 68 326 L172 326 C188 325 200 315 202 300 L206 175 C208 150 202 130 188 120 Z" class="body-outline"/>
+
+                                    <!-- Left Lung -->
+                                    <ellipse cx="88" cy="186" rx="25" ry="40" class="organ" id="organLungsL" data-organ="lungs" data-label="Lungs"/>
+                                    <!-- Right Lung -->
+                                    <ellipse cx="152" cy="186" rx="25" ry="40" class="organ" id="organLungsR" data-organ="lungs"/>
+
+                                    <!-- Heart -->
+                                    <path d="M104 162 C104 150 120 142 120 155 C120 142 136 150 136 162 C136 178 120 192 120 192 C120 192 104 178 104 162Z" class="organ" id="organHeart" data-organ="heart" data-label="Heart"/>
+
+                                    <!-- Liver (right side) -->
+                                    <ellipse cx="144" cy="236" rx="34" ry="26" class="organ" id="organLiver" data-organ="liver" data-label="Liver"/>
+
+                                    <!-- Stomach -->
+                                    <ellipse cx="100" cy="236" rx="22" ry="20" class="organ" id="organGI" data-organ="gi" data-label="GI Tract / Stomach"/>
+
+                                    <!-- Intestines -->
+                                    <ellipse cx="120" cy="272" rx="30" ry="22" class="organ" id="organIntestines" data-organ="gi"/>
+
+                                    <!-- Left Kidney -->
+                                    <ellipse cx="78" cy="262" rx="17" ry="24" class="organ" id="organKidneyL" data-organ="kidneys" data-label="Kidneys"/>
+                                    <!-- Right Kidney -->
+                                    <ellipse cx="162" cy="262" rx="17" ry="24" class="organ" id="organKidneyR" data-organ="kidneys"/>
+
+                                    <!-- Left Arm -->
+                                    <path d="M34 175 C22 185 16 205 18 230 L20 290 C20 302 28 310 38 310 L54 310 C64 310 68 302 66 290 L62 230 C60 205 56 185 52 175Z" class="body-outline"/>
+                                    <!-- Right Arm -->
+                                    <path d="M206 175 C218 185 224 205 222 230 L220 290 C220 302 212 310 202 310 L186 310 C176 310 172 302 174 290 L178 230 C180 205 184 185 188 175Z" class="body-outline"/>
+
+                                    <!-- Left Hand -->
+                                    <ellipse cx="38" cy="318" rx="18" ry="12" class="body-outline"/>
+                                    <!-- Right Hand -->
+                                    <ellipse cx="202" cy="318" rx="18" ry="12" class="body-outline"/>
+
+                                    <!-- Left Leg -->
+                                    <path d="M68 326 L62 455 C60 468 68 478 82 478 L104 478 C118 478 126 468 124 455 L118 326Z" class="body-outline"/>
+                                    <!-- Right Leg -->
+                                    <path d="M122 326 L116 455 C114 468 122 478 136 478 L158 478 C172 478 180 468 178 455 L172 326Z" class="body-outline"/>
+
+                                    <!-- Left Foot -->
+                                    <ellipse cx="88" cy="486" rx="28" ry="11" class="body-outline"/>
+                                    <!-- Right Foot -->
+                                    <ellipse cx="147" cy="486" rx="28" ry="11" class="body-outline"/>
+
+                                </svg>
+                            </div>
+
+                            <div class="organ-legend" id="organLegend">
+                                <p class="placeholder-text">Select drugs and run simulation to see body distribution.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- FDA Drug Info Card -->
-                <div id="fdaDrugInfoCard" class="fda-drug-card" style="display:none;">
-                    <div class="fda-card-header">
-                        <span class="fda-badge">FDA</span>
-                        <span id="fdaDrugName" class="fda-drug-title"></span>
+                <!-- RIGHT PANEL: AI Analysis -->
+                <div class="panel right-panel">
+                    <div class="panel-header-row">
+                        <h2 class="panel-title">🤖 Live Analysis</h2>
+                        <div class="ai-source-badge" id="aiSourceBadge">Awaiting</div>
                     </div>
-                    <div id="fdaDrugDetails" class="fda-card-body"></div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Interaction Summary</h3>
+                        <div class="ai-text" id="interactionSummary">
+                            <p class="placeholder-text">Add 2+ drugs and run simulation to see interaction analysis...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Mechanisms of Action</h3>
+                        <div class="ai-text" id="mechanismAnalysis">
+                            <p class="placeholder-text">Select drugs to see how they work in the body...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Clinical Risks</h3>
+                        <div class="ai-text" id="clinicalRisks">
+                            <p class="placeholder-text">Simulation required to assess clinical risks...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Dosing Guidance</h3>
+                        <div class="ai-text" id="dosingGuidance">
+                            <p class="placeholder-text">Patient profile and drug selection required...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Recommendations</h3>
+                        <div class="ai-text" id="recommendations">
+                            <p class="placeholder-text">Run simulation to receive clinical recommendations...</p>
+                        </div>
+                    </div>
+
+                    <div class="rxnorm-section" id="rxnormSection" style="display:none;">
+                        <div class="rxnorm-header">
+                            <span class="rxnorm-badge">RxNorm / NLM</span>
+                            <span class="rxnorm-title">Real-World Interaction Data</span>
+                        </div>
+                        <div id="rxnormContent" class="rxnorm-content"></div>
+                    </div>
                 </div>
 
-                <!-- Prescription Selector (local DB) -->
-                <div class="control-group">
-                    <label for="drugSelector">Select from Local Database</label>
-                    <select id="drugSelector" class="dropdown"></select>
-                </div>
+            </div><!-- end .dashboard -->
+        </div><!-- end #simulationTab -->
 
-                <div class="control-group btn-row">
-                    <button class="btn btn-secondary" id="addMedicationBtn">+ Add to Active Meds</button>
-                    <button class="btn btn-primary" id="evaluateBtn">Check Interactions</button>
-                </div>
+        <!-- ====================================================
+             TAB: AI INSIGHTS CHAT
+             ==================================================== -->
+        <div id="aiChatTab" class="tab-content" style="display:none;">
+            <div class="chat-layout">
 
-                <div class="control-group">
-                    <label>Active Medications</label>
-                    <div id="currentMedsList" class="pill-list"></div>
-                </div>
+                <!-- Context Sidebar -->
+                <aside class="chat-sidebar">
+                    <h3 class="sidebar-title">📋 Simulation Context</h3>
+                    <div id="chatContext" class="chat-context-content">
+                        <p class="placeholder-text">No simulation active. Go to Simulation Lab, select drugs, and run simulation first.</p>
+                    </div>
 
-                <button class="btn btn-primary" id="simulateBtn">
-                    <span class="btn-icon">▶</span>
-                    Run Simulation
-                </button>
+                    <div class="section-divider"></div>
 
-                <button class="btn btn-reset" id="resetBtn">↺ Reset Parameters</button>
+                    <h4 class="sidebar-subtitle">Quick Questions</h4>
+                    <div class="quick-questions">
+                        <button class="quick-q-btn" data-q="What are the main risks and mechanisms of interaction between these drugs?">
+                            ⚠️ Main interaction risks?
+                        </button>
+                        <button class="quick-q-btn" data-q="Explain the pharmacokinetics of each drug and how they affect each other's absorption and elimination.">
+                            🔬 Pharmacokinetics explained?
+                        </button>
+                        <button class="quick-q-btn" data-q="Are there safer alternative drug combinations that achieve the same therapeutic goals?">
+                            💊 Safer alternatives?
+                        </button>
+                        <button class="quick-q-btn" data-q="What clinical monitoring parameters should be checked when using this drug combination?">
+                            📋 What to monitor?
+                        </button>
+                        <button class="quick-q-btn" data-q="How should doses be adjusted for an elderly patient (>65 years) with reduced kidney function?">
+                            👴 Elderly/renal dosing?
+                        </button>
+                        <button class="quick-q-btn" data-q="What are the signs and symptoms of toxicity or adverse reactions I should watch for?">
+                            🚨 Signs of toxicity?
+                        </button>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <div class="fda-sidebar" id="fdaSidebarSection">
+                        <h4 class="sidebar-subtitle">🔍 FDA Drug Search</h4>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" id="fdaSearchSidebar" class="text-input" placeholder="Search OpenFDA database..." autocomplete="off">
+                            <div class="autocomplete-spinner" id="fdaSpinnerSidebar" style="display:none;"><div class="spinner-small"></div></div>
+                            <div class="autocomplete-list" id="fdaAutocompleteSidebar"></div>
+                        </div>
+                        <div id="fdaCardSidebar" class="fda-mini-card" style="display:none;"></div>
+                    </div>
+                </aside>
+
+                <!-- Chat Main Area -->
+                <main class="chat-main">
+                    <div class="chat-header">
+                        <h2>AI Pharmacology Assistant</h2>
+                        <div class="chat-status">
+                            <span class="status-dot" id="chatStatusDot"></span>
+                            <span id="chatStatusText">Connecting...</span>
+                        </div>
+                    </div>
+
+                    <div id="chatMessages" class="chat-messages" role="log" aria-live="polite">
+                        <div class="chat-message assistant">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI pharmacology assistant, powered by <strong>Claude AI</strong> and grounded in real pharmaceutical data.</p>
+                                <p>I can help you understand <strong>drug interactions</strong>, <strong>mechanisms of action</strong>, <strong>pharmacokinetics</strong>, dosing considerations, and patient safety.</p>
+                                <p>To get the most relevant answers, <strong>set up your drug combination in the Simulation Lab</strong> first — I'll have full context about what you're studying.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <div class="chat-input-wrapper">
+                            <textarea
+                                id="chatInput"
+                                class="chat-input"
+                                placeholder="Ask about drug interactions, mechanisms, dosing, patient safety..."
+                                rows="2"
+                                aria-label="Chat message input"
+                            ></textarea>
+                            <button id="sendChatBtn" class="btn-send" aria-label="Send message">
+                                Send
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="chat-disclaimer">AI responses are educational only. Always consult a licensed healthcare professional for clinical decisions.</p>
+                    </div>
+                </main>
+
             </div>
+        </div><!-- end #aiChatTab -->
 
-            <!-- ==============================
-                 CENTER PANEL: Visualization
-                 ============================== -->
-            <div class="panel center-panel">
-                <h2 class="panel-title">Real-Time Simulation</h2>
-
-                <div class="chart-container">
-                    <div class="chart-loading" id="chartLoading" style="display:none;">
-                        <div class="spinner"></div>
-                        <span>Running simulation...</span>
-                    </div>
-                    <canvas id="concentrationChart"></canvas>
-                </div>
-
-                <div class="metrics-row">
-                    <div class="metric">
-                        <label>Drug Effectiveness</label>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="effectivenessBar"></div>
-                        </div>
-                        <span class="percentage" id="effectivenessValue">0%</span>
-                    </div>
-                </div>
-
-                <div class="risk-container">
-                    <label>Side Effect Risk</label>
-                    <div class="risk-indicator" id="riskIndicator">
-                        <span class="risk-label">Awaiting Parameters...</span>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat">
-                        <span class="stat-label">Peak Concentration</span>
-                        <span class="stat-value" id="peakConcentration">—</span>
-                        <span class="stat-unit">ng/mL</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Half-Life</span>
-                        <span class="stat-value" id="halfLife">—</span>
-                        <span class="stat-unit">hours</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Bioavailability</span>
-                        <span class="stat-value" id="bioavailability">—</span>
-                        <span class="stat-unit">%</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Absorption Time</span>
-                        <span class="stat-value" id="absorptionTime">—</span>
-                        <span class="stat-unit">hours</span>
-                    </div>
-                </div>
-
-                <!-- PK Parameter Summary -->
-                <div class="pk-summary" id="pkSummary" style="display:none;">
-                    <h3 class="section-subtitle">Pharmacokinetic Summary</h3>
-                    <div class="pk-grid" id="pkGrid"></div>
-                </div>
-            </div>
-
-            <!-- ==============================
-                 RIGHT PANEL: AI Analysis
-                 ============================== -->
-            <div class="panel right-panel">
-                <div class="panel-header-row">
-                    <h2 class="panel-title" style="margin-bottom:0; border-bottom:none;">AI Analysis &amp; Recommendations</h2>
-                    <div class="ai-source-badge" id="aiSourceBadge">Template</div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Drug Behavior Prediction</h3>
-                    <div class="ai-text" id="aiPrediction">
-                        <p class="placeholder-text">Adjust parameters and run simulation to generate AI analysis...</p>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Prescription Safety Check</h3>
-                    <div class="ai-text" id="prescriptionSafety">
-                        <p class="placeholder-text">Use the patient profile and medication selector below to evaluate drug interactions, allergies, and risk levels.</p>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Drug Interaction Analysis</h3>
-                    <div class="interaction-risk-score" id="interactionRiskScore">
-                        <div class="risk-score-display">
-                            <span class="risk-score-label">Interaction Risk:</span>
-                            <span class="risk-score-value" id="riskScoreValue">None</span>
-                        </div>
-                        <div class="risk-meter">
-                            <div class="risk-meter-fill" id="riskMeterFill"></div>
-                        </div>
-                    </div>
-                    <div class="ai-text" id="interactionAnalysis">
-                        <p class="placeholder-text">Add medications to analyze interactions...</p>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Potential Risks &amp; Side Effects</h3>
-                    <div class="ai-text" id="aiRisks">
-                        <p class="placeholder-text">Select parameters to analyze potential risks...</p>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Optimization Suggestions</h3>
-                    <div class="ai-text" id="aiSuggestions">
-                        <ul class="suggestion-list">
-                            <li>Run simulation to receive personalized recommendations</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Dosing Recommendations</h3>
-                    <div class="ai-text" id="aiDosing">
-                        <p class="placeholder-text">Calculate dosing regimens once simulation runs...</p>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Personalized Recommendations</h3>
-                    <div class="ai-text" id="personalizedRecommendations">
-                        <ul class="suggestion-list">
-                            <li>Complete patient profile to receive personalized safety recommendations</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="analysis-section">
-                    <h3 class="section-subtitle">Check History</h3>
-                    <div class="ai-text" id="historyLog">
-                        <p class="placeholder-text">No checks recorded yet. Run an interaction check to create a patient record.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- end .dashboard -->
     </div><!-- end .app-container -->
 
-    <!-- Report Modal -->
-    <div class="modal-overlay" id="reportModal" style="display:none;">
+    <!-- ====================================================
+         REPORT MODAL
+         ==================================================== -->
+    <div class="modal-overlay" id="reportModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
         <div class="modal">
             <div class="modal-header">
-                <h2>📄 Patient Report</h2>
-                <button class="modal-close" id="modalClose">✕</button>
+                <h2 id="reportModalTitle">📄 Simulation Report</h2>
+                <button class="modal-close" id="modalClose" aria-label="Close report">✕</button>
             </div>
             <div class="modal-body" id="reportContent"></div>
             <div class="modal-footer">
@@ -377,5 +406,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
