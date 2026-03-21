@@ -1202,6 +1202,14 @@ function switchVizView(viz) {
   document
     .getElementById("bodyView")
     .classList.toggle("active", viz === "body");
+
+  if (viz === "body") {
+    // Re-render body map data when view is active
+    if (state.simulationResults && state.simulationResults.results.length) {
+      updateBodyAtTime(state.currentBodyTime || 0);
+      document.getElementById("bodyTimeScrubber").style.display = "flex";
+    }
+  }
 }
 
 // ============================================================
@@ -1656,7 +1664,14 @@ function toggleBodyTimeAnimation() {
 
 function updateBodyAtTime(t) {
   document.getElementById("bodyScrubberTimeLabel").textContent = `T+${t}h`;
-  if (!state.simulationResults) return;
+  if (!state.simulationResults || !state.simulationResults.results.length) {
+    const legend = document.getElementById("organLegend");
+    if (legend) {
+      legend.innerHTML =
+        '<p class="placeholder-text">Run simulation to activate body map and display organ concentrations.</p>';
+    }
+    return;
+  }
   state.currentBodyTime = t;
 
   const results = state.simulationResults.results;
@@ -1842,21 +1857,51 @@ async function runSimulation() {
 
   document.getElementById("chartLoading").style.display = "none";
 
-  try { updateChart(results); } catch (e) { console.error("updateChart error:", e); }
-  try { updateMetrics(results); } catch (e) { console.error("updateMetrics error:", e); }
-  try { showPKSummary(results); } catch (e) { console.error("showPKSummary error:", e); }
-  try { updateBodyModel(activeSlots); } catch (e) { console.error("updateBodyModel error:", e); }
-  try { renderChatContext(); } catch (e) { console.error("renderChatContext error:", e); }
-  try { updateRiskScore(); } catch (e) { console.error("updateRiskScore error:", e); }
+  try {
+    updateChart(results);
+  } catch (e) {
+    console.error("updateChart error:", e);
+  }
+  try {
+    updateMetrics(results);
+  } catch (e) {
+    console.error("updateMetrics error:", e);
+  }
+  try {
+    showPKSummary(results);
+  } catch (e) {
+    console.error("showPKSummary error:", e);
+  }
+  try {
+    updateBodyModel(activeSlots);
+  } catch (e) {
+    console.error("updateBodyModel error:", e);
+  }
+  try {
+    renderChatContext();
+  } catch (e) {
+    console.error("renderChatContext error:", e);
+  }
+  try {
+    updateRiskScore();
+  } catch (e) {
+    console.error("updateRiskScore error:", e);
+  }
 
   // Show time scrubbers
   try {
     document.getElementById("timeScrubber").style.display = "flex";
     document.getElementById("bodyTimeScrubber").style.display = "flex";
-  } catch (e) { console.error("scrubber error:", e); }
+  } catch (e) {
+    console.error("scrubber error:", e);
+  }
 
   // Always populate template analysis first (instant)
-  try { generateTemplateAnalysis(results); } catch (e) { console.error("Template analysis error:", e); }
+  try {
+    generateTemplateAnalysis(results);
+  } catch (e) {
+    console.error("Template analysis error:", e);
+  }
 
   // Then try AI analysis as an upgrade (non-blocking)
   if (state.claudeAvailable) {
@@ -1871,7 +1916,11 @@ async function runSimulation() {
   }
 
   ticker.classList.remove("analyzing");
-  try { updateLiveFeedback(); } catch (e) { console.error("updateLiveFeedback error:", e); }
+  try {
+    updateLiveFeedback();
+  } catch (e) {
+    console.error("updateLiveFeedback error:", e);
+  }
 
   btn.disabled = false;
   btn.innerHTML =
@@ -2094,9 +2143,17 @@ function updateBodyModel(activeSlots) {
 
   renderOrganLegend(activeSlots, organDrugMap);
 
-  // Auto-start body animation after brief delay
-  if (state.simulationResults) {
-    setTimeout(() => updateBodyAtTime(0), 100);
+  // Auto-start body animation after brief delay and ensure we show current data
+  if (state.simulationResults && state.simulationResults.results.length) {
+    state.currentBodyTime = state.currentBodyTime || 0;
+    setTimeout(() => updateBodyAtTime(state.currentBodyTime), 100);
+  } else {
+    // no active simulation yet
+    const legend = document.getElementById("organLegend");
+    if (legend) {
+      legend.innerHTML =
+        '<p class="placeholder-text" style="margin-top:0.5rem;">Run simulation to activate body map (tissue levels, interactions, and organ risk highlighting apply here).</p>';
+    }
   }
 }
 
@@ -2300,9 +2357,9 @@ function distributeAnalysis(fullText) {
   const sectionMap = {
     "INTERACTION SUMMARY": "interactionSummary",
     "MECHANISMS OF ACTION": "mechanismAnalysis",
-    "GUIDANCE": "dosingGuidance",
+    GUIDANCE: "dosingGuidance",
     "POTENTIAL RISKS": "clinicalRisks",
-    "RECOMMENDATIONS": "recommendations",
+    RECOMMENDATIONS: "recommendations",
   };
 
   const assignedSections = new Set();
@@ -2322,10 +2379,14 @@ function distributeAnalysis(fullText) {
   if (assignedSections.size === 0) {
     const normalized = fullText.replace(/\r/g, "");
     const heuristic = {
-      interactionSummary: /interaction summary\s*[:\-]?\s*([\s\S]*?)(?=mechanisms of action|clinical risks|dosing guidance|recommendations|$)/i,
-      mechanismAnalysis: /mechanisms of action\s*[:\-]?\s*([\s\S]*?)(?=clinical risks|dosing guidance|recommendations|$)/i,
-      clinicalRisks: /clinical risks\s*[:\-]?\s*([\s\S]*?)(?=dosing guidance|recommendations|$)/i,
-      dosingGuidance: /dosing guidance\s*[:\-]?\s*([\s\S]*?)(?=recommendations|$)/i,
+      interactionSummary:
+        /interaction summary\s*[:\-]?\s*([\s\S]*?)(?=mechanisms of action|clinical risks|dosing guidance|recommendations|$)/i,
+      mechanismAnalysis:
+        /mechanisms of action\s*[:\-]?\s*([\s\S]*?)(?=clinical risks|dosing guidance|recommendations|$)/i,
+      clinicalRisks:
+        /clinical risks\s*[:\-]?\s*([\s\S]*?)(?=dosing guidance|recommendations|$)/i,
+      dosingGuidance:
+        /dosing guidance\s*[:\-]?\s*([\s\S]*?)(?=recommendations|$)/i,
       recommendations: /recommendations\s*[:\-]?\s*([\s\S]*?)$/i,
     };
 
@@ -2466,21 +2527,39 @@ function generateTemplateAnalysis(_results) {
   const recs = [];
   interactions.forEach((ix) => {
     if (ix.severity === "high")
-      recs.push(`Consider avoiding concurrent use of <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>, or use with close monitoring.`);
+      recs.push(
+        `Consider avoiding concurrent use of <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>, or use with close monitoring.`,
+      );
     else if (ix.severity === "medium")
-      recs.push(`Monitor therapy when combining <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>. Adjust doses if needed.`);
+      recs.push(
+        `Monitor therapy when combining <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>. Adjust doses if needed.`,
+      );
   });
   activeSlots.forEach((slot) => {
     const drug = getDrugData(slot.drugId);
-    if (state.patient.kidneyFunction < 60 && ["amoxicillin", "metformin", "lisinopril"].includes(slot.drugId))
-      recs.push(`Reduce <strong>${drug.name}</strong> dose for renal impairment (eGFR ${state.patient.kidneyFunction}%).`);
+    if (
+      state.patient.kidneyFunction < 60 &&
+      ["amoxicillin", "metformin", "lisinopril"].includes(slot.drugId)
+    )
+      recs.push(
+        `Reduce <strong>${drug.name}</strong> dose for renal impairment (eGFR ${state.patient.kidneyFunction}%).`,
+      );
     if (state.patient.age > 65 && drug.halfLife > 12)
-      recs.push(`Consider lower starting dose of <strong>${drug.name}</strong> in elderly patients due to extended half-life.`);
-    if (state.patient.liverFunction !== "normal" && ["warfarin", "atorvastatin", "sertraline"].includes(slot.drugId))
-      recs.push(`Use <strong>${drug.name}</strong> with caution — ${state.patient.liverFunction} hepatic impairment may increase drug exposure.`);
+      recs.push(
+        `Consider lower starting dose of <strong>${drug.name}</strong> in elderly patients due to extended half-life.`,
+      );
+    if (
+      state.patient.liverFunction !== "normal" &&
+      ["warfarin", "atorvastatin", "sertraline"].includes(slot.drugId)
+    )
+      recs.push(
+        `Use <strong>${drug.name}</strong> with caution — ${state.patient.liverFunction} hepatic impairment may increase drug exposure.`,
+      );
   });
   if (recs.length === 0 && activeSlots.length > 0)
-    recs.push("No specific concerns identified. Continue current regimen with routine monitoring.");
+    recs.push(
+      "No specific concerns identified. Continue current regimen with routine monitoring.",
+    );
   document.getElementById("recommendations").innerHTML = recs.length
     ? `<ul class="suggestion-list">${recs.map((r) => `<li>${r}</li>`).join("")}</ul>`
     : '<p class="placeholder-text">Select drugs to see recommendations.</p>';
@@ -3658,10 +3737,10 @@ function createLocalDiscoveryResult(condition, drugs, patientProfile) {
         simulationParams: {
           drug1: {
             name: d1.name,
-            suggestedDose: DRUG_DB[d1.genericName?.toLowerCase()]?.defaultDose || 100,
+            suggestedDose:
+              DRUG_DB[d1.genericName?.toLowerCase()]?.defaultDose || 100,
             frequency: "bid",
-            halfLife:
-              DRUG_DB[d1.genericName?.toLowerCase()]?.halfLife || 6,
+            halfLife: DRUG_DB[d1.genericName?.toLowerCase()]?.halfLife || 6,
             bioavailability:
               DRUG_DB[d1.genericName?.toLowerCase()]?.bioavailability || 0.7,
             Vd: DRUG_DB[d1.genericName?.toLowerCase()]?.Vd || 1.0,
@@ -3671,10 +3750,10 @@ function createLocalDiscoveryResult(condition, drugs, patientProfile) {
           },
           drug2: {
             name: d2.name,
-            suggestedDose: DRUG_DB[d2.genericName?.toLowerCase()]?.defaultDose || 100,
+            suggestedDose:
+              DRUG_DB[d2.genericName?.toLowerCase()]?.defaultDose || 100,
             frequency: "bid",
-            halfLife:
-              DRUG_DB[d2.genericName?.toLowerCase()]?.halfLife || 6,
+            halfLife: DRUG_DB[d2.genericName?.toLowerCase()]?.halfLife || 6,
             bioavailability:
               DRUG_DB[d2.genericName?.toLowerCase()]?.bioavailability || 0.7,
             Vd: DRUG_DB[d2.genericName?.toLowerCase()]?.Vd || 1.0,
@@ -3759,10 +3838,7 @@ async function runDiscovery() {
   }
 
   if (!foundDrugs.length) {
-    showToast(
-      "No drugs available to analyze for this condition.",
-      "warning",
-    );
+    showToast("No drugs available to analyze for this condition.", "warning");
     loadingEl.style.display = "none";
     btn.disabled = false;
     return;
@@ -3811,11 +3887,11 @@ async function runDiscovery() {
   if (mlData?.success && mlData.result) {
     finalResult = mlData.result;
   } else {
-    finalResult = createLocalDiscoveryResult(condition, state.discoveryState.drugsWithPK);
-    showToast(
-      "ML discovery fallback engaged (local heuristics used).",
-      "info",
+    finalResult = createLocalDiscoveryResult(
+      condition,
+      state.discoveryState.drugsWithPK,
     );
+    showToast("ML discovery fallback engaged (local heuristics used).", "info");
   }
 
   state.discoveryState.mlResults = finalResult;
