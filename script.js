@@ -1114,7 +1114,7 @@ async function checkServerStatus() {
       signal: AbortSignal.timeout(4000),
     });
     const data = await res.json();
-    if (data.claudeConfigured) {
+    if (data.openRouterConfigured || data.claudeConfigured) {
       dot.className = "status-dot connected";
       text.textContent = "Claude AI Connected";
       chatDot.className = "status-dot connected";
@@ -1846,15 +1846,11 @@ async function runSimulation() {
   document.getElementById("timeScrubber").style.display = "flex";
   document.getElementById("bodyTimeScrubber").style.display = "flex";
 
-  // AI Analysis
-  if (state.claudeAvailable) {
-    btn.innerHTML = '<div class="spinner-small"></div> AI Analyzing...';
-    document.getElementById("tickerText").textContent =
-      "🤖 Claude AI generating clinical analysis...";
-    await generateAIAnalysis(results);
-  } else {
-    generateTemplateAnalysis(results);
-  }
+  // AI Analysis (always attempt ML analysis, fallback to template if unavailable)
+  btn.innerHTML = '<div class="spinner-small"></div> AI Analyzing...';
+  document.getElementById("tickerText").textContent =
+    "🤖 Generating pharmacology analysis...";
+  await generateAIAnalysis(results);
 
   ticker.classList.remove("analyzing");
   updateLiveFeedback();
@@ -2227,9 +2223,24 @@ async function generateAIAnalysis(results) {
     if (!res.ok) throw new Error("Claude API error");
     const data = await res.json();
     if (data.analysis) {
-      distributeAnalysis(data.analysis);
+      const assigned = distributeAnalysis(data.analysis);
       document.getElementById("aiSourceBadge").textContent = "Claude AI";
       document.getElementById("aiSourceBadge").classList.add("active");
+      if (!assigned) {
+        // deliver a guaranteed result in all panels
+        const fallback = formatAIText(data.analysis);
+        [
+          "interactionSummary",
+          "mechanismAnalysis",
+          "clinicalRisks",
+          "dosingGuidance",
+          "recommendations",
+        ].forEach((id) => {
+          document.getElementById(id).innerHTML =
+            '<p class="placeholder-text">AI returned text in non-standard format; showing raw full output.</p>' +
+            `<div class="ai-raw">${fallback}</div>`;
+        });
+      }
     } else throw new Error("No analysis");
   } catch {
     generateTemplateAnalysis(results);
@@ -2267,7 +2278,14 @@ function buildAnalysisPrompt(results) {
 **RxNorm Data:** ${rxnormSummary || "Not available"}
 **PK Results:** ${results.map((r) => `${r.name}: Cmax=${r.peak.toFixed(0)} ng/mL, Tmax=${r.tmax}h, t½=${r.halfLife.toFixed(1)}h`).join("\n")}
 
-Provide analysis in 5 labeled sections: [SECTION: INTERACTION SUMMARY], [SECTION: MECHANISMS OF ACTION], [SECTION: CLINICAL RISKS], [SECTION: DOSING GUIDANCE], [SECTION: RECOMMENDATIONS]. Each 2-4 sentences.`;
+Provide analysis in 5 labeled sections, each with complete content:
+[SECTION: INTERACTION SUMMARY] - Describe summary of interactions (magnitude + type).
+[SECTION: MECHANISMS OF ACTION] - Explain how each drug works and why combination matters.
+[SECTION: CLINICAL RISKS] - Identify possible risks (bleeding, renal, hepatic, QT, CYP interactions).
+[SECTION: DOSING GUIDANCE] - Dose/frequency recommendations with adjustments.
+[SECTION: RECOMMENDATIONS] - Final practical recommendations with monitoring and next steps.
+
+If unable to parse, return text with headings indicating each section. Ensure each section is at least 1-2 sentences.`;
 }
 
 function distributeAnalysis(fullText) {
@@ -2278,21 +2296,60 @@ function distributeAnalysis(fullText) {
     "DOSING GUIDANCE": "dosingGuidance",
     RECOMMENDATIONS: "recommendations",
   };
-  const parts = fullText.split(/\[SECTION:\s*([^\]]+)\]/);
+
+  const assignedSections = new Set();
+  const parts = fullText.split(/\[SECTION:\s*([^\]]+)\]/i);
+
   for (let i = 1; i < parts.length; i += 2) {
-    const label = parts[i]?.trim();
+    const label = parts[i]?.trim().toUpperCase();
     const content = parts[i + 1]?.trim();
     const elId = sectionMap[label];
-    if (elId && content)
+    if (elId && content) {
       document.getElementById(elId).innerHTML = formatAIText(content);
+      assignedSections.add(elId);
+    }
   }
+
+  // If no explicit sections found, fallback by heuristics
+  if (assignedSections.size === 0) {
+    const normalized = fullText.replace(/\r/g, "");
+    const heuristic = {
+      interactionSummary: /interaction summary\s*[:\-]?\s*([\s\S]*?)(?=mechanisms of action|clinical risks|dosing guidance|recommendations|$)/i,
+      mechanismAnalysis: /mechanisms of action\s*[:\-]?\s*([\s\S]*?)(?=clinical risks|dosing guidance|recommendations|$)/i,
+      clinicalRisks: /clinical risks\s*[:\-]?\s*([\s\S]*?)(?=dosing guidance|recommendations|$)/i,
+      dosingGuidance: /dosing guidance\s*[:\-]?\s*([\s\S]*?)(?=recommendations|$)/i,
+      recommendations: /recommendations\s*[:\-]?\s*([\s\S]*?)$/i,
+    };
+
+    Object.entries(heuristic).forEach(([k, re]) => {
+      const match = normalized.match(re);
+      const elId = k;
+      if (match && match[1]?.trim()) {
+        document.getElementById(elId).innerHTML = formatAIText(match[1].trim());
+        assignedSections.add(elId);
+      }
+    });
+  }
+
+  // If still no parsed sections, populate fallback text in each panel.
+  if (assignedSections.size === 0) {
+    const fallbackHtml = formatAIText(fullText);
+    Object.values(sectionMap).forEach((id) => {
+      document.getElementById(id).innerHTML =
+        '<p class="placeholder-text">AI returned unstructured text; showing the raw analysis below.</p>' +
+        `<div class="ai-raw">${fallbackHtml}</div>`;
+    });
+    return true;
+  }
+
   Object.values(sectionMap).forEach((id) => {
     const el = document.getElementById(id);
     if (el && el.innerHTML.includes("spinner-small"))
       el.innerHTML = '<p class="placeholder-text">Section not generated.</p>';
   });
-}
 
+  return assignedSections.size > 0;
+}
 function formatAIText(text) {
   return text
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
