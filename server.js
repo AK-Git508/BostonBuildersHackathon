@@ -120,12 +120,14 @@ app.post("/api/claude", async (req, res) => {
         .json({ error: "OPENROUTER_API_KEY not configured. Add it to .env" });
     }
 
+    const baseSystem =
+      systemPrompt ||
+      `You are an expert clinical pharmacologist specializing in drug interactions and pharmacokinetics.\nProvide concise, evidence-based analysis. Use **bold** for key terms and risk levels.\nStructure responses with clear sections. Be specific, practical, and accessible to healthcare students.`;
+
     const messages = [
       {
         role: "system",
-        content:
-          systemPrompt ||
-          `You are an expert clinical pharmacologist specializing in drug interactions and pharmacokinetics.\nProvide concise, evidence-based analysis. Use **bold** for key terms and risk levels.\nStructure responses with clear sections. Be specific, practical, and accessible to healthcare students.`,
+        content: buildOpenRouterSystemPrompt(baseSystem),
       },
       { role: "user", content: prompt },
     ];
@@ -161,7 +163,7 @@ app.post("/api/chat", async (req, res) => {
         .json({ error: "OPENROUTER_API_KEY not configured" });
     }
 
-    const systemPrompt = `You are an expert clinical pharmacologist and drug safety specialist assisting with a drug interaction simulation lab.
+    const systemPrompt = buildOpenRouterSystemPrompt(`You are an expert clinical pharmacologist and drug safety specialist assisting with a drug interaction simulation lab.
 You provide evidence-based, educational information about drug interactions, pharmacokinetics, dosing, and patient safety.
 ${systemContext ? `\nCurrent simulation context:\n${systemContext}` : ""}
 
@@ -172,7 +174,7 @@ Guidelines:
 - Cite mechanisms of interaction when known (e.g., CYP enzyme inhibition, protein binding displacement)
 - Format responses with **bold** for drug names and key risks
 - Keep responses concise but complete (under 300 words unless more detail is needed)
-- Always recommend professional medical consultation for clinical decisions`;
+- Always recommend professional medical consultation for clinical decisions`);
 
     const response = await openRouterChat({
       model: OPENROUTER_MODEL,
@@ -432,6 +434,17 @@ const KNOWN_DRUGS = [
   "roflumilast",
 ];
 
+const OPENROUTER_DRUG_CATALOG = `All drugs in the app:
+${KNOWN_DRUGS.join(", ")}`;
+
+function buildOpenRouterSystemPrompt(basePrompt = "") {
+  return `${basePrompt}
+
+${OPENROUTER_DRUG_CATALOG}
+
+Always use the app drug catalog context for analysis. This context contains generic names and drug classes.`.trim();
+}
+
 function extractDrugNames(text) {
   const lower = text.toLowerCase();
   return [...new Set(KNOWN_DRUGS.filter((d) => lower.includes(d)))];
@@ -634,64 +647,57 @@ app.post("/api/pharmacology-chat", async (req, res) => {
     const fdaData = fdaResults.filter(Boolean);
     const pubchemData = pubchemResults.filter(Boolean);
 
-    // If OpenRouter is available, use it with real data as grounding context
-    if (OPENROUTER_API_KEY) {
-      const groundingContext = [
-        context ? `Simulation context:\n${context}` : "",
-        drugNames.length > 0 ? `Drugs mentioned: ${drugNames.join(", ")}` : "",
-        fdaData.length > 0
-          ? `OpenFDA data:\n${fdaData
-              .map(
-                (d) =>
-                  `${d.name}: Class=${d.drugClass}, Mechanism=${d.mechanism?.substring(0, 200)}, Warnings=${d.warnings?.substring(0, 150)}`,
-              )
-              .join("\n")}`
-          : "",
-        rxnormIx.length > 0
-          ? `RxNorm interactions:\n${rxnormIx
-              .map(
-                (ix) =>
-                  `${ix.drug1}+${ix.drug2} (${ix.severity}): ${ix.description}`,
-              )
-              .join("\n")}`
-          : "",
-        pubchemData.length > 0
-          ? `PubChem properties:\n${pubchemData
-              .map((p) => `${p.name}: MW=${p.mw}, LogP=${p.logP}`)
-              .join("\n")}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n\n");
-
-      const messages = [
-        {
-          role: "system",
-          content: `You are an expert clinical pharmacologist. Answer questions accurately and concisely.\nUse **bold** for drug names and key risks. Keep responses under 400 words.\nAlways recommend professional medical consultation for clinical decisions.\n\nWhen a user describes a medical condition or disease, ALWAYS recommend specific evidence-based drug combinations:\n- List 2-4 drug combinations with evidence scores (e.g., "Evidence: 9/10")\n- For each combination: name the drugs, explain the mechanism/rationale, list key monitoring parameters\n- Format as: "**Drug A + Drug B** — [why this works] | Monitor: [parameters]"\n- Include first-line vs second-line options when relevant\n- Mention key contraindications or special populations (renal/hepatic impairment, elderly, pregnancy)\n${groundingContext ? `\nReal-time data retrieved from OpenFDA, RxNorm (NLM), and PubChem:\n${groundingContext}` : ""}`,
-        },
-        ...(history || []).slice(-8),
-        { role: "user", content: message },
-      ];
-
-      const response = await openRouterChat({
-        model: OPENROUTER_MODEL,
-        max_tokens: 1024,
-        messages,
-      });
-
-      const text = response?.choices?.[0]?.message?.content || "";
-      return res.json({ reply: text, source: "openrouter+fda+rxnorm" });
+    if (!OPENROUTER_API_KEY) {
+      return res
+        .status(503)
+        .json({ error: "OpenRouter API required for pharmacology chat." });
     }
 
-    // No LLM key — format real fetched data as the response
-    const reply = formatDataResponse(
-      message,
-      drugNames,
-      fdaData,
-      rxnormIx,
-      pubchemData,
-    );
-    res.json({ reply, source: "fda+rxnorm+pubchem" });
+    const groundingContext = [
+      context ? `Simulation context:\n${context}` : "",
+      drugNames.length > 0 ? `Drugs mentioned: ${drugNames.join(", ")}` : "",
+      fdaData.length > 0
+        ? `OpenFDA data:\n${fdaData
+            .map(
+              (d) =>
+                `${d.name}: Class=${d.drugClass}, Mechanism=${d.mechanism?.substring(0, 200)}, Warnings=${d.warnings?.substring(0, 150)}`,
+            )
+            .join("\n")}`
+        : "",
+      rxnormIx.length > 0
+        ? `RxNorm interactions:\n${rxnormIx
+            .map(
+              (ix) =>
+                `${ix.drug1}+${ix.drug2} (${ix.severity}): ${ix.description}`,
+            )
+            .join("\n")}`
+        : "",
+      pubchemData.length > 0
+        ? `PubChem properties:\n${pubchemData
+            .map((p) => `${p.name}: MW=${p.mw}, LogP=${p.logP}`)
+            .join("\n")}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const messages = [
+      {
+        role: "system",
+        content: buildOpenRouterSystemPrompt(`You are an expert clinical pharmacologist. Answer questions accurately and concisely.\nUse **bold** for drug names and key risks. Keep responses under 400 words.\nAlways recommend professional medical consultation for clinical decisions.\n\nWhen a user describes a medical condition or disease, ALWAYS recommend specific evidence-based drug combinations:\n- List 2-4 drug combinations with evidence scores (e.g., "Evidence: 9/10")\n- For each combination: name the drugs, explain the mechanism/rationale, list key monitoring parameters\n- Format as: "**Drug A + Drug B** — [why this works] | Monitor: [parameters]"\n- Include first-line vs second-line options when relevant\n- Mention key contraindications or special populations (renal/hepatic impairment, elderly, pregnancy)\n${groundingContext ? `\nReal-time data retrieved from OpenFDA, RxNorm (NLM), and PubChem:\n${groundingContext}` : ""}`),
+      },
+      ...(history || []).slice(-8),
+      { role: "user", content: message },
+    ];
+
+    const response = await openRouterChat({
+      model: OPENROUTER_MODEL,
+      max_tokens: 1024,
+      messages,
+    });
+
+    const text = response?.choices?.[0]?.message?.content || "";
+    return res.json({ reply: text, source: "openrouter+fda+rxnorm" });
   } catch (error) {
     console.error("pharmacology-chat error:", error.message);
     res.status(500).json({ error: error.message });
@@ -913,8 +919,9 @@ app.post("/api/ml-discover", async (req, res) => {
       messages: [
         {
           role: "system",
-          content:
+          content: buildOpenRouterSystemPrompt(
             "You are a computational pharmacologist specializing in multi-target drug combination therapy and ML-based drug repurposing. You apply tabular regression analysis to pharmacokinetic and pharmacodynamic property matrices to identify optimal drug combinations. You evaluate feature importance, property correlations, mechanistic synergy, and PK compatibility.",
+          ),
         },
         {
           role: "user",
