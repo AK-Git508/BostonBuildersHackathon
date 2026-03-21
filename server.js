@@ -712,6 +712,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
     openRouterConfigured: !!OPENROUTER_API_KEY,
+    claudeConfigured: !!OPENROUTER_API_KEY,
     timestamp: new Date().toISOString(),
   });
 });
