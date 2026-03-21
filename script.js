@@ -1215,6 +1215,7 @@ function addDrugSlot() {
   }
   state.slots.push({
     drugId: null,
+    root: "",
     dose: 0,
     adminTime: 0,
     frequency: "single",
@@ -1268,6 +1269,10 @@ function renderSlots() {
                           .join("")}
                     </select>
                 </div>
+                <div class="control-group">
+                    <label>Drug Root (optional)</label>
+                    <input type="text" class="text-input" value="${slot.root || ""}" placeholder="Enter a drug root name" onchange="onDrugRootChange(${index}, this.value)" />
+                </div>
                 ${
                   drug
                     ? `
@@ -1312,6 +1317,7 @@ function toggleSlot(index) {
 function onDrugSelected(index, drugId) {
   const drug = getDrugData(drugId) || null;
   state.slots[index].drugId = drugId || null;
+  state.slots[index].root = drug ? drug.genericName || drug.name || "" : "";
   state.slots[index].dose = drug ? drug.defaultDose : 0;
   state.slots[index].adminTime = 0;
   state.slots[index].frequency = "single";
@@ -1319,6 +1325,11 @@ function onDrugSelected(index, drugId) {
   onParameterChange();
   updateDrugsActiveCount();
   fetchRxNormInteractions();
+}
+
+function onDrugRootChange(index, value) {
+  state.slots[index].root = value.trim();
+  onParameterChange();
 }
 
 function onDoseChange(index, value, display) {
@@ -1807,6 +1818,7 @@ async function runSimulation() {
     const drug = getDrugData(slot.drugId);
     return {
       drugId: slot.drugId,
+      root: slot.root || drug.genericName || drug.name || "",
       name: drug.name,
       dose: slot.dose || drug.defaultDose,
       frequency: slot.frequency,
@@ -2448,9 +2460,10 @@ function renderChatContext() {
   const drugItems = activeSlots
     .map((slot, i) => {
       const drug = getDrugData(slot.drugId);
+      const rootLabel = slot.root ? ` · root: ${slot.root}` : "";
       return `<div class="context-drug-item">
             <div class="context-drug-name"><span class="context-drug-dot" style="background:${DRUG_COLORS[i]};"></span>${drug.name}</div>
-            <div class="context-drug-detail">${slot.dose || drug.defaultDose}mg ${slot.frequency} · ${drug.drugClass}</div>
+            <div class="context-drug-detail">${slot.dose || drug.defaultDose}mg ${slot.frequency} · ${drug.drugClass}${rootLabel}</div>
         </div>`;
     })
     .join("");
@@ -2475,7 +2488,8 @@ function buildChatSystemContext() {
   const drugList = activeSlots
     .map((slot) => {
       const drug = getDrugData(slot.drugId);
-      return `- ${drug.name} (${drug.drugClass}): ${slot.dose || drug.defaultDose}mg ${slot.frequency}`;
+      const root = slot.root ? ` (root: ${slot.root})` : "";
+      return `- ${drug.name}${root} (${drug.drugClass}): ${slot.dose || drug.defaultDose}mg ${slot.frequency}`;
     })
     .join("\n");
   const simResults =
@@ -3244,7 +3258,8 @@ function generateReport() {
   const drugRows = activeSlots
     .map((slot, i) => {
       const drug = getDrugData(slot.drugId);
-      return `<div><label>Drug ${i + 1}:</label><span>${drug.name} (${drug.drugClass}) — ${slot.dose || drug.defaultDose}mg ${slot.frequency}</span></div>`;
+      const rootLabel = slot.root ? ` — Root: ${slot.root}` : "";
+      return `<div><label>Drug ${i + 1}:</label><span>${drug.name} (${drug.drugClass}) — ${slot.dose || drug.defaultDose}mg ${slot.frequency}${rootLabel}</span></div>`;
     })
     .join("");
 
@@ -3504,6 +3519,8 @@ async function selectLiveDrug(slotIndex, drugName) {
 
     // Update slot
     state.slots[slotIndex].drugId = drugId;
+    state.slots[slotIndex].root =
+      data.genericName || data.brandName || drugName || "";
     state.slots[slotIndex].dose = 100;
     state.slots[slotIndex].frequency = "single";
     state.slots[slotIndex].adminTime = 0;
