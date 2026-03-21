@@ -1114,7 +1114,7 @@ async function checkServerStatus() {
       signal: AbortSignal.timeout(4000),
     });
     const data = await res.json();
-    if (data.claudeConfigured) {
+    if (data.claudeConfigured || data.openRouterConfigured) {
       dot.className = "status-dot connected";
       text.textContent = "Claude AI Connected";
       chatDot.className = "status-dot connected";
@@ -1810,54 +1810,68 @@ async function runSimulation() {
 
   await sleep(400);
 
-  const pkOverrides = computePKOverrides(state.slots);
-  const results = activeSlots.map((slot, localIdx) => {
-    const globalIdx = state.slots.indexOf(slot);
-    const overrides = pkOverrides[globalIdx] || {};
-    const data = generateDrugCurve(slot, state.patient, overrides);
-    const drug = getDrugData(slot.drugId);
-    return {
-      drugId: slot.drugId,
-      root: slot.root || drug.genericName || drug.name || "",
-      name: drug.name,
-      dose: slot.dose || drug.defaultDose,
-      frequency: slot.frequency,
-      data,
-      peak: Math.max(...data),
-      tmax: data.indexOf(Math.max(...data)),
-      auc: data.reduce((a, b) => a + b, 0),
-      halfLife: drug.halfLife * (overrides.halfLifeMultiplier || 1),
-      color: DRUG_COLORS[localIdx],
-    };
-  });
+  let results;
+  try {
+    const pkOverrides = computePKOverrides(state.slots);
+    results = activeSlots.map((slot, localIdx) => {
+      const globalIdx = state.slots.indexOf(slot);
+      const overrides = pkOverrides[globalIdx] || {};
+      const data = generateDrugCurve(slot, state.patient, overrides);
+      const drug = getDrugData(slot.drugId);
+      return {
+        drugId: slot.drugId,
+        root: slot.root || drug.genericName || drug.name || "",
+        name: drug.name,
+        dose: slot.dose || drug.defaultDose,
+        frequency: slot.frequency,
+        data,
+        peak: Math.max(...data),
+        tmax: data.indexOf(Math.max(...data)),
+        auc: data.reduce((a, b) => a + b, 0),
+        halfLife: drug.halfLife * (overrides.halfLifeMultiplier || 1),
+        color: DRUG_COLORS[localIdx],
+      };
+    });
 
-  state.simulationResults = { results, patient: { ...state.patient } };
+    state.simulationResults = { results, patient: { ...state.patient } };
+  } catch (e) {
+    console.error("Simulation PK error:", e);
+    results = [];
+    state.simulationResults = { results, patient: { ...state.patient } };
+  }
 
   document.getElementById("chartLoading").style.display = "none";
 
-  updateChart(results);
-  updateMetrics(results);
-  showPKSummary(results);
-  updateBodyModel(activeSlots);
-  renderChatContext();
-  updateRiskScore();
+  try { updateChart(results); } catch (e) { console.error("updateChart error:", e); }
+  try { updateMetrics(results); } catch (e) { console.error("updateMetrics error:", e); }
+  try { showPKSummary(results); } catch (e) { console.error("showPKSummary error:", e); }
+  try { updateBodyModel(activeSlots); } catch (e) { console.error("updateBodyModel error:", e); }
+  try { renderChatContext(); } catch (e) { console.error("renderChatContext error:", e); }
+  try { updateRiskScore(); } catch (e) { console.error("updateRiskScore error:", e); }
 
   // Show time scrubbers
-  document.getElementById("timeScrubber").style.display = "flex";
-  document.getElementById("bodyTimeScrubber").style.display = "flex";
+  try {
+    document.getElementById("timeScrubber").style.display = "flex";
+    document.getElementById("bodyTimeScrubber").style.display = "flex";
+  } catch (e) { console.error("scrubber error:", e); }
 
-  // AI Analysis
+  // Always populate template analysis first (instant)
+  try { generateTemplateAnalysis(results); } catch (e) { console.error("Template analysis error:", e); }
+
+  // Then try AI analysis as an upgrade (non-blocking)
   if (state.claudeAvailable) {
     btn.innerHTML = '<div class="spinner-small"></div> AI Analyzing...';
     document.getElementById("tickerText").textContent =
-      "🤖 Claude AI generating clinical analysis...";
-    await generateAIAnalysis(results);
-  } else {
-    generateTemplateAnalysis(results);
+      "🤖 AI generating clinical analysis...";
+    try {
+      await generateAIAnalysis(results);
+    } catch (e) {
+      console.error("AI analysis error:", e);
+    }
   }
 
   ticker.classList.remove("analyzing");
-  updateLiveFeedback();
+  try { updateLiveFeedback(); } catch (e) { console.error("updateLiveFeedback error:", e); }
 
   btn.disabled = false;
   btn.innerHTML =
@@ -2200,24 +2214,13 @@ function renderRxNormSection(interactions) {
 // ============================================================
 
 async function generateAIAnalysis(results) {
-  const sections = [
-    "interactionSummary",
-    "mechanismAnalysis",
-    "clinicalRisks",
-    "dosingGuidance",
-    "recommendations",
-  ];
-  sections.forEach((id) => {
-    document.getElementById(id).innerHTML =
-      '<div class="ai-loading"><div class="spinner-small"></div> Generating AI analysis...</div>';
-  });
-
   const prompt = buildAnalysisPrompt(results);
 
   try {
     const res = await fetch("/api/claude", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
         prompt,
         maxTokens: 2500,
@@ -2230,9 +2233,10 @@ async function generateAIAnalysis(results) {
       distributeAnalysis(data.analysis);
       document.getElementById("aiSourceBadge").textContent = "Claude AI";
       document.getElementById("aiSourceBadge").classList.add("active");
-    } else throw new Error("No analysis");
-  } catch {
-    generateTemplateAnalysis(results);
+    }
+  } catch (e) {
+    console.error("AI analysis unavailable:", e.message);
+    // Template analysis already populated, no action needed
   }
 }
 
@@ -2267,16 +2271,16 @@ function buildAnalysisPrompt(results) {
 **RxNorm Data:** ${rxnormSummary || "Not available"}
 **PK Results:** ${results.map((r) => `${r.name}: Cmax=${r.peak.toFixed(0)} ng/mL, Tmax=${r.tmax}h, t½=${r.halfLife.toFixed(1)}h`).join("\n")}
 
-Provide analysis in 5 labeled sections: [SECTION: INTERACTION SUMMARY], [SECTION: MECHANISMS OF ACTION], [SECTION: CLINICAL RISKS], [SECTION: DOSING GUIDANCE], [SECTION: RECOMMENDATIONS]. Each 2-4 sentences.`;
+Provide analysis in 5 labeled sections: [SECTION: INTERACTION SUMMARY], [SECTION: MECHANISMS OF ACTION], [SECTION: GUIDANCE], [SECTION: POTENTIAL RISKS], [SECTION: RECOMMENDATIONS]. Each 2-4 sentences. The RECOMMENDATIONS section should provide actionable clinical recommendations including monitoring parameters, alternative therapies, and safety precautions.`;
 }
 
 function distributeAnalysis(fullText) {
   const sectionMap = {
     "INTERACTION SUMMARY": "interactionSummary",
     "MECHANISMS OF ACTION": "mechanismAnalysis",
-    "CLINICAL RISKS": "clinicalRisks",
-    "DOSING GUIDANCE": "dosingGuidance",
-    RECOMMENDATIONS: "recommendations",
+    "GUIDANCE": "dosingGuidance",
+    "POTENTIAL RISKS": "clinicalRisks",
+    "RECOMMENDATIONS": "recommendations",
   };
   const parts = fullText.split(/\[SECTION:\s*([^\]]+)\]/);
   for (let i = 1; i < parts.length; i += 2) {
@@ -2399,31 +2403,26 @@ function generateTemplateAnalysis(_results) {
 
   // Recommendations
   const recs = [];
-  if (interactions.some((ix) => ix.severity === "high"))
-    recs.push(
-      "Consult a pharmacist before co-administering — major interaction exists.",
-    );
-  if (state.patient.age > 75)
-    recs.push("Start at reduced doses (>75 years); monitor closely.");
-  if (state.patient.kidneyFunction < 50)
-    recs.push("Multiple drugs may require renal dose adjustment.");
-  if (activeSlots.length >= 2)
-    recs.push(
-      "Document all medications and screen for interactions at every visit.",
-    );
-  activeSlots.forEach((s) => {
-    const drug = getDrugData(s.drugId);
-    if (drug.monitoring?.length)
-      recs.push(
-        `Monitor for ${drug.name}: ${drug.monitoring.slice(0, 2).join(", ")}.`,
-      );
+  interactions.forEach((ix) => {
+    if (ix.severity === "high")
+      recs.push(`Consider avoiding concurrent use of <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>, or use with close monitoring.`);
+    else if (ix.severity === "medium")
+      recs.push(`Monitor therapy when combining <strong>${ix.drugA}</strong> and <strong>${ix.drugB}</strong>. Adjust doses if needed.`);
   });
+  activeSlots.forEach((slot) => {
+    const drug = getDrugData(slot.drugId);
+    if (state.patient.kidneyFunction < 60 && ["amoxicillin", "metformin", "lisinopril"].includes(slot.drugId))
+      recs.push(`Reduce <strong>${drug.name}</strong> dose for renal impairment (eGFR ${state.patient.kidneyFunction}%).`);
+    if (state.patient.age > 65 && drug.halfLife > 12)
+      recs.push(`Consider lower starting dose of <strong>${drug.name}</strong> in elderly patients due to extended half-life.`);
+    if (state.patient.liverFunction !== "normal" && ["warfarin", "atorvastatin", "sertraline"].includes(slot.drugId))
+      recs.push(`Use <strong>${drug.name}</strong> with caution — ${state.patient.liverFunction} hepatic impairment may increase drug exposure.`);
+  });
+  if (recs.length === 0 && activeSlots.length > 0)
+    recs.push("No specific concerns identified. Continue current regimen with routine monitoring.");
   document.getElementById("recommendations").innerHTML = recs.length
-    ? `<ul class="suggestion-list">${recs
-        .slice(0, 6)
-        .map((r) => `<li>${r}</li>`)
-        .join("")}</ul>`
-    : "<p>Follow standard clinical guidelines.</p>";
+    ? `<ul class="suggestion-list">${recs.map((r) => `<li>${r}</li>`).join("")}</ul>`
+    : '<p class="placeholder-text">Select drugs to see recommendations.</p>';
 
   document.getElementById("aiSourceBadge").textContent = "Template";
   document.getElementById("aiSourceBadge").classList.remove("active");
@@ -3290,6 +3289,7 @@ function generateReport() {
         </div></div>
         <div class="report-section"><h2>PK Results</h2><div class="report-grid">${pkRows}</div></div>
         <div class="report-section"><h2>Interaction Analysis</h2>${document.getElementById("interactionSummary")?.innerHTML || ""}</div>
+        <div class="report-section"><h2>Dosing Guidance</h2>${document.getElementById("dosingGuidance")?.innerHTML || ""}</div>
         <div class="report-section"><h2>Clinical Risks</h2>${document.getElementById("clinicalRisks")?.innerHTML || ""}</div>
         <div class="report-section"><h2>Recommendations</h2>${document.getElementById("recommendations")?.innerHTML || ""}</div>
         <div class="report-footer"><strong>Disclaimer:</strong> Educational simulation tool. Not for clinical use. Consult qualified healthcare professionals.</div>
@@ -3362,8 +3362,8 @@ function resetAll() {
   [
     "interactionSummary",
     "mechanismAnalysis",
-    "clinicalRisks",
     "dosingGuidance",
+    "clinicalRisks",
     "recommendations",
   ].forEach((id) => {
     const el = document.getElementById(id);
