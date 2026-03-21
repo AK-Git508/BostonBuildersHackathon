@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Interaction Lab — AI-Powered Simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- ══════════════════════════════════════════════════════
+         PHARMAOGEN LANDING SCREEN
+    ══════════════════════════════════════════════════════ -->
+    <div id="landingScreen" class="landing-screen">
+        <div class="landing-bg-glow landing-glow-1"></div>
+        <div class="landing-bg-glow landing-glow-2"></div>
+        <div class="landing-bg-glow landing-glow-3"></div>
+
+        <div class="landing-content">
+            <!-- Left: text + features -->
+            <div class="landing-left">
+                <div class="landing-badge">AI-Powered Drug Intelligence</div>
+
+                <h1 class="landing-title">
+                    Pharma<span class="landing-title-accent">ogen</span>
+                </h1>
+                <p class="landing-subtitle">AI-Powered Drug Combination Intelligence</p>
+
+                <div class="landing-features">
+                    <div class="landing-feature">
+                        <div class="lf-icon lf-icon-blue">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                        </div>
+                        <div>
+                            <div class="lf-title">Smart Drug Combinations</div>
+                            <div class="lf-desc">ML regression on real FDA pharmacokinetic data to predict optimal combinations</div>
+                        </div>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="lf-icon lf-icon-purple">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <div>
+                            <div class="lf-title">Continuous Learning System</div>
+                            <div class="lf-desc">Trained on OpenFDA, RxNorm NLM, and PubChem pharmacological databases</div>
+                        </div>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="lf-icon lf-icon-cyan">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <div class="lf-title">Interaction Detection</div>
+                            <div class="lf-desc">Real-time PK simulation with organ-level visualization and danger alerts</div>
+                        </div>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="lf-icon lf-icon-green">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg>
+                        </div>
+                        <div>
+                            <div class="lf-title">AI Pharmacology Assistant</div>
+                            <div class="lf-desc">Live answers powered by FDA + RxNorm + PubChem — no simulation required</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="landing-cta" onclick="enterApp()">
+                    <span>Enter Lab</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <!-- Right: pill visualization -->
+            <div class="landing-right">
+                <div class="landing-pill-wrap">
+                    <svg class="landing-pill-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="pill1Grad" cx="35%" cy="35%">
+                                <stop offset="0%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#4c1d95"/>
+                            </radialGradient>
+                            <radialGradient id="pill2Grad" cx="35%" cy="35%">
+                                <stop offset="0%" stop-color="#67e8f9"/>
+                                <stop offset="100%" stop-color="#0e7490"/>
+                            </radialGradient>
+                            <radialGradient id="pill3Grad" cx="35%" cy="35%">
+                                <stop offset="0%" stop-color="#f9a8d4"/>
+                                <stop offset="100%" stop-color="#9d174d"/>
+                            </radialGradient>
+                            <filter id="pillGlow"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="18" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        </defs>
+                        <!-- Glow halo -->
+                        <ellipse cx="150" cy="155" rx="90" ry="60" fill="none" stroke="rgba(124,58,237,0.2)" stroke-width="1" filter="url(#softGlow)"/>
+
+                        <!-- Large capsule pill (tilted ~-30deg) -->
+                        <g transform="translate(150,140) rotate(-30)">
+                            <rect x="-55" y="-20" width="110" height="40" rx="20" fill="url(#pill1Grad)" filter="url(#pillGlow)" opacity="0.95"/>
+                            <rect x="-55" y="-20" width="55" height="40" rx="0" fill="url(#pill2Grad)" opacity="0.9"/>
+                            <rect x="-55" y="-20" width="55" height="40" rx="20" fill="url(#pill2Grad)" opacity="0.9"/>
+                            <line x1="0" y1="-20" x2="0" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                            <ellipse cx="-30" cy="-8" rx="12" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-15)"/>
+                        </g>
+
+                        <!-- Small round pill top-right -->
+                        <g transform="translate(215,80)">
+                            <circle cx="0" cy="0" r="26" fill="url(#pill3Grad)" filter="url(#pillGlow)" opacity="0.9"/>
+                            <ellipse cx="-8" cy="-8" rx="8" ry="4" fill="rgba(255,255,255,0.25)" transform="rotate(-20)"/>
+                        </g>
+
+                        <!-- Small capsule bottom-left -->
+                        <g transform="translate(82,210) rotate(20)">
+                            <rect x="-30" y="-11" width="60" height="22" rx="11" fill="url(#pill2Grad)" filter="url(#pillGlow)" opacity="0.85"/>
+                            <rect x="-30" y="-11" width="30" height="22" rx="0" fill="url(#pill1Grad)" opacity="0.8"/>
+                            <rect x="-30" y="-11" width="30" height="22" rx="11" fill="url(#pill1Grad)" opacity="0.8"/>
+                        </g>
+
+                        <!-- Floating dots -->
+                        <circle cx="220" cy="175" r="6" fill="#7c3aed" opacity="0.6" class="landing-dot-pulse"/>
+                        <circle cx="95" cy="105" r="4" fill="#00d4ff" opacity="0.5" class="landing-dot-pulse" style="animation-delay:0.6s"/>
+                        <circle cx="200" cy="225" r="5" fill="#ec4899" opacity="0.55" class="landing-dot-pulse" style="animation-delay:1.2s"/>
+                        <circle cx="120" cy="235" r="3" fill="#10b981" opacity="0.5" class="landing-dot-pulse" style="animation-delay:1.8s"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <p class="landing-footer">Educational tool only · Not for clinical use · Data from OpenFDA, RxNorm NLM, PubChem</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Live AI Feedback Ticker -->
+    <div id="aiFeedbackTicker" class="ai-feedback-ticker">
+        <div class="ticker-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <span id="tickerText">Select drugs to begin interaction analysis</span>
+    </div>
+
+    <div class="app-container">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-group">
+                        <div class="logo-mark">
+                            <svg viewBox="0 0 28 28" width="28" height="28"><circle cx="14" cy="14" r="13" fill="none" stroke="url(#logoGrad)" stroke-width="2"/><circle cx="14" cy="10" r="3" fill="url(#logoGrad)"/><circle cx="9" cy="18" r="2.5" fill="url(#logoGrad)" opacity="0.7"/><circle cx="19" cy="18" r="2.5" fill="url(#logoGrad)" opacity="0.7"/><line x1="14" y1="10" x2="9" y2="18" stroke="url(#logoGrad)" stroke-width="1.2" opacity="0.5"/><line x1="14" y1="10" x2="19" y2="18" stroke="url(#logoGrad)" stroke-width="1.2" opacity="0.5"/><line x1="9" y1="18" x2="19" y2="18" stroke="url(#logoGrad)" stroke-width="1.2" opacity="0.5"/><defs><linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs></svg>
+                        </div>
+                        <div>
+                            <h1 class="logo">Drug Interaction Lab</h1>
+                            <p class="tagline">Simulate and prevent dangerous drug interactions using AI and real medical data</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <nav class="tab-nav" role="tablist">
+                        <button class="tab-btn active" data-tab="simulation" role="tab" aria-selected="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/></svg>
+                            Simulation Lab
+                        </button>
+                        <button class="tab-btn" data-tab="discovery" role="tab" aria-selected="false">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                            Drug Discovery
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="header-right">
+                    <div class="api-status" id="apiStatus">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Connecting...</span>
+                    </div>
+                    <button class="btn-header" id="reportBtn" title="Generate report">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Report
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- DEMO MODE BAR -->
+        <div class="demo-bar" id="demoBar">
+            <div class="demo-bar-inner">
+                <div class="demo-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Quick Demo
+                </div>
+                <div class="demo-scenarios">
+                    <button class="demo-btn demo-btn-danger" onclick="loadDemoScenario('high')">
+                        <span class="demo-dot danger"></span>
+                        High-Risk: Warfarin + Aspirin
+                    </button>
+                    <button class="demo-btn demo-btn-safe" onclick="loadDemoScenario('safe')">
+                        <span class="demo-dot safe"></span>
+                        Safe: Metformin + Omeprazole
+                    </button>
+                    <button class="demo-btn demo-btn-moderate" onclick="loadDemoScenario('moderate')">
+                        <span class="demo-dot moderate"></span>
+                        Moderate: Sertraline + Ibuprofen + Warfarin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SIMULATION LAB -->
+        <div id="simulationTab" class="tab-content active">
+            <div class="dashboard">
+
+                <!-- LEFT PANEL: Drug Controls -->
+                <div class="panel left-panel">
+                    <div class="panel-header-row">
+                        <h2 class="panel-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                            Drug Setup
+                        </h2>
+                        <button class="btn-icon-sm" id="addDrugBtn" title="Add drug slot (max 3)">+ Add Drug</button>
+                    </div>
+
+                    <!-- Drug Slots Container -->
+                    <div id="drugSlots" class="drug-slots"></div>
+
+                    <div class="section-divider"></div>
+
+                    <!-- Patient Profile -->
+                    <h3 class="section-title">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Patient Profile
+                    </h3>
+
+                    <div class="control-group">
+                        <label for="patientAge">Age (years)</label>
+                        <div class="slider-container">
+                            <input type="range" id="patientAge" min="18" max="85" value="45" class="slider">
+                            <span class="value-display" id="patientAgeValue">45</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="patientWeight">Weight (kg)</label>
+                        <div class="slider-container">
+                            <input type="range" id="patientWeight" min="40" max="150" value="70" class="slider">
+                            <span class="value-display" id="patientWeightValue">70</span>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings Toggle -->
+                    <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        Advanced Settings
+                    </button>
+
+                    <div id="advancedSettings" class="advanced-settings collapsed">
+                        <div class="control-group">
+                            <label for="kidneyFunction">Kidney Function (eGFR %)</label>
+                            <div class="slider-container">
+                                <input type="range" id="kidneyFunction" min="10" max="100" value="100" class="slider">
+                                <span class="value-display" id="kidneyFunctionValue">100</span>
+                            </div>
+                            <span class="field-hint" id="kidneyHint"></span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="liverFunction">Liver Function</label>
+                            <select id="liverFunction" class="dropdown">
+                                <option value="normal">Normal</option>
+                                <option value="mild">Mild Impairment (Child-Pugh A)</option>
+                                <option value="moderate">Moderate Impairment (Child-Pugh B)</option>
+                                <option value="severe">Severe / Cirrhosis (Child-Pugh C)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <button class="btn btn-primary" id="simulateBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Run Simulation
+                    </button>
+
+                    <button class="btn btn-reset" id="resetBtn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Reset All
+                    </button>
+                </div>
+
+                <!-- CENTER PANEL: Visualization -->
+                <div class="panel center-panel">
+                    <!-- Risk Score -->
+                    <div class="risk-score-container" id="riskScoreContainer">
+                        <div class="risk-score-ring" id="riskScoreRing">
+                            <svg viewBox="0 0 120 120" class="risk-ring-svg">
+                                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-linecap="round"
+                                    id="riskArc" class="risk-arc"
+                                    stroke-dasharray="327" stroke-dashoffset="327"
+                                    transform="rotate(-90 60 60)"/>
+                            </svg>
+                            <div class="risk-score-value">
+                                <span class="risk-number" id="riskNumber">—</span>
+                                <span class="risk-label-text">Risk Score</span>
+                            </div>
+                        </div>
+                        <div class="risk-details">
+                            <div class="risk-detail-item" id="riskSeverityLabel">
+                                <span class="risk-detail-dot" id="riskDot"></span>
+                                <span id="riskSeverityText">Select drugs to assess</span>
+                            </div>
+                            <div class="risk-factors" id="riskFactors"></div>
+                        </div>
+                    </div>
+
+                    <!-- Viz mode toggle -->
+                    <div class="viz-tabs">
+                        <button class="viz-tab active" data-viz="chart">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Concentration
+                        </button>
+                        <button class="viz-tab" data-viz="body">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Body Map
+                        </button>
+                    </div>
+
+                    <!-- Interaction Alert Banner -->
+                    <div id="interactionBanner" class="interaction-banner" style="display:none;"></div>
+
+                    <!-- Concentration Chart View -->
+                    <div id="chartView" class="viz-view active">
+                        <div class="chart-container">
+                            <div class="chart-loading" id="chartLoading" style="display:none;">
+                                <div class="spinner"></div>
+                                <span>Simulating pharmacokinetics...</span>
+                            </div>
+                            <canvas id="concentrationChart"></canvas>
+                        </div>
+
+                        <!-- Time Scrubber -->
+                        <div class="time-scrubber" id="timeScrubber" style="display:none;">
+                            <label class="scrubber-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span id="scrubberTimeLabel">T+0h</span>
+                            </label>
+                            <input type="range" id="timeScrubberSlider" min="0" max="48" value="0" class="slider scrubber-slider">
+                            <button class="scrubber-play-btn" id="scrubberPlayBtn" onclick="toggleTimeAnimation()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="metrics-row">
+                            <div class="metric-card">
+                                <span class="metric-label">Drugs Active</span>
+                                <span class="metric-value" id="drugsActiveVal">0</span>
+                            </div>
+                            <div class="metric-card" id="metricInteraction">
+                                <span class="metric-label">Interaction</span>
+                                <span class="metric-value" id="interactionLevelVal">—</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Time</span>
+                                <span class="metric-value" id="tmaxVal">—</span>
+                                <span class="metric-unit">hours</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Duration</span>
+                                <span class="metric-value" id="simDurationVal">48</span>
+                                <span class="metric-unit">hours</span>
+                            </div>
+                        </div>
+
+                        <!-- PK Summary Table -->
+                        <div id="pkSummary" class="pk-summary" style="display:none;">
+                            <h3 class="section-subtitle">Pharmacokinetic Summary</h3>
+                            <div id="pkGrid" class="pk-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Body Distribution View -->
+                    <div id="bodyView" class="viz-view" style="display:none;">
+                        <div class="body-layout">
+
+                            <!-- LEFT: SVG + controls -->
+                            <div class="body-left">
+                                <div class="body-svg-wrapper">
+                                    <svg id="bodySVG" viewBox="0 0 240 520" class="body-svg" aria-label="Human body diagram showing drug distribution">
+                                        <defs>
+                                            <filter id="organGlow0" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#00d4ff" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#ff6b9d" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#ffd60a" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow3" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#7c3aed" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow4" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#10b981" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow5" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#f97316" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#ef4444" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow7" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#06b6d4" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow8" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#84cc16" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlow9" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feFlood flood-color="#ec4899" flood-opacity="0.6"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                            <filter id="organGlowMulti" x="-50%" y="-50%" width="200%" height="200%">
+                                                <feGaussianBlur stdDeviation="8" result="blur"/>
+                                                <feFlood flood-color="#9d4edd" flood-opacity="0.7"/>
+                                                <feComposite in2="blur" operator="in"/>
+                                                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+                                            </filter>
+                                            <filter id="organGlowDanger" x="-50%" y="-50%" width="200%" height="200%">
+                                                <feGaussianBlur stdDeviation="8" result="blur"/>
+                                                <feFlood flood-color="#ff3366" flood-opacity="0.8"/>
+                                                <feComposite in2="blur" operator="in"/>
+                                                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+                                            </filter>
+                                        </defs>
+                                        <ellipse cx="120" cy="52" rx="42" ry="46" class="body-outline"/>
+                                        <ellipse cx="120" cy="44" rx="34" ry="28" class="organ" id="organBrain" data-organ="brain" data-label="Brain / CNS"
+                                            onmouseenter="showOrganTooltip('organBrain','brain',event)" onmousemove="showOrganTooltip('organBrain','brain',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organBrain','brain')"/>
+                                        <circle cx="108" cy="48" r="4" class="organ-detail"/>
+                                        <circle cx="132" cy="48" r="4" class="organ-detail"/>
+                                        <rect x="109" y="94" width="22" height="26" rx="4" class="body-outline"/>
+                                        <path d="M52 120 C38 130 32 150 34 175 L38 300 C40 315 52 325 68 326 L172 326 C188 325 200 315 202 300 L206 175 C208 150 202 130 188 120 Z" class="body-outline"/>
+                                        <ellipse cx="88" cy="186" rx="25" ry="40" class="organ" id="organLungsL" data-organ="lungs" data-label="Lungs"
+                                            onmouseenter="showOrganTooltip('organLungsL','lungs',event)" onmousemove="showOrganTooltip('organLungsL','lungs',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organLungsL','lungs')"/>
+                                        <ellipse cx="152" cy="186" rx="25" ry="40" class="organ" id="organLungsR" data-organ="lungs"
+                                            onmouseenter="showOrganTooltip('organLungsR','lungs',event)" onmousemove="showOrganTooltip('organLungsR','lungs',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organLungsR','lungs')"/>
+                                        <path d="M104 162 C104 150 120 142 120 155 C120 142 136 150 136 162 C136 178 120 192 120 192 C120 192 104 178 104 162Z" class="organ" id="organHeart" data-organ="heart" data-label="Heart"
+                                            onmouseenter="showOrganTooltip('organHeart','heart',event)" onmousemove="showOrganTooltip('organHeart','heart',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organHeart','heart')"/>
+                                        <ellipse cx="144" cy="236" rx="34" ry="26" class="organ" id="organLiver" data-organ="liver" data-label="Liver"
+                                            onmouseenter="showOrganTooltip('organLiver','liver',event)" onmousemove="showOrganTooltip('organLiver','liver',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organLiver','liver')"/>
+                                        <ellipse cx="100" cy="236" rx="22" ry="20" class="organ" id="organGI" data-organ="gi" data-label="GI Tract"
+                                            onmouseenter="showOrganTooltip('organGI','gi',event)" onmousemove="showOrganTooltip('organGI','gi',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organGI','gi')"/>
+                                        <ellipse cx="120" cy="272" rx="30" ry="22" class="organ" id="organIntestines" data-organ="gi"
+                                            onmouseenter="showOrganTooltip('organIntestines','gi',event)" onmousemove="showOrganTooltip('organIntestines','gi',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organIntestines','gi')"/>
+                                        <ellipse cx="78" cy="262" rx="17" ry="24" class="organ" id="organKidneyL" data-organ="kidneys" data-label="Kidneys"
+                                            onmouseenter="showOrganTooltip('organKidneyL','kidneys',event)" onmousemove="showOrganTooltip('organKidneyL','kidneys',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organKidneyL','kidneys')"/>
+                                        <ellipse cx="162" cy="262" rx="17" ry="24" class="organ" id="organKidneyR" data-organ="kidneys"
+                                            onmouseenter="showOrganTooltip('organKidneyR','kidneys',event)" onmousemove="showOrganTooltip('organKidneyR','kidneys',event)" onmouseleave="hideOrganTooltip()" onclick="showOrganPanel('organKidneyR','kidneys')"/>
+                                        <path d="M34 175 C22 185 16 205 18 230 L20 290 C20 302 28 310 38 310 L54 310 C64 310 68 302 66 290 L62 230 C60 205 56 185 52 175Z" class="body-outline"/>
+                                        <path d="M206 175 C218 185 224 205 222 230 L220 290 C220 302 212 310 202 310 L186 310 C176 310 172 302 174 290 L178 230 C180 205 184 185 188 175Z" class="body-outline"/>
+                                        <ellipse cx="38" cy="318" rx="18" ry="12" class="body-outline"/>
+                                        <ellipse cx="202" cy="318" rx="18" ry="12" class="body-outline"/>
+                                        <path d="M68 326 L62 455 C60 468 68 478 82 478 L104 478 C118 478 126 468 124 455 L118 326Z" class="body-outline"/>
+                                        <path d="M122 326 L116 455 C114 468 122 478 136 478 L158 478 C172 478 180 468 178 455 L172 326Z" class="body-outline"/>
+                                        <ellipse cx="88" cy="486" rx="28" ry="11" class="body-outline"/>
+                                        <ellipse cx="147" cy="486" rx="28" ry="11" class="body-outline"/>
+                                    </svg>
+                                    <!-- Floating tooltip -->
+                                    <div id="organTooltip" class="organ-tooltip" style="display:none;"></div>
+                                </div>
+
+                                <!-- Scrubber + phase below SVG -->
+                                <div class="body-controls" id="bodyTimeScrubber" style="display:none;">
+                                    <div class="body-scrubber-inner">
+                                        <button class="scrubber-play-btn" id="bodyScrubberPlayBtn" onclick="toggleBodyTimeAnimation()">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        </button>
+                                        <input type="range" id="bodyTimeScrubberSlider" min="0" max="48" value="0" class="slider scrubber-slider"
+                                            oninput="updateBodyAtTime(+this.value)">
+                                        <span id="bodyScrubberTimeLabel" class="scrubber-time-label">T+0h</span>
+                                    </div>
+                                    <div class="adme-phase-indicator">
+                                        <span class="adme-label">Phase:</span>
+                                        <span id="admePhaseLabel" class="adme-phase-value">—</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT: Info panel -->
+                            <div class="body-right">
+                                <!-- Organ detail panel (shown on click) -->
+                                <div id="organDetailPanel" class="organ-detail-panel" style="display:none;"></div>
+                                <!-- Legend always visible -->
+                                <div class="organ-legend" id="organLegend">
+                                    <p class="placeholder-text">Run a simulation to see drug distribution across organs.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: AI Analysis -->
+                <div class="panel right-panel">
+                    <div class="panel-header-row">
+                        <h2 class="panel-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                            Live Analysis
+                        </h2>
+                        <div class="ai-source-badge" id="aiSourceBadge">Awaiting</div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Interaction Summary</h3>
+                        <div class="ai-text" id="interactionSummary">
+                            <p class="placeholder-text">Add 2+ drugs and run simulation to see interaction analysis...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Mechanisms of Action</h3>
+                        <div class="ai-text" id="mechanismAnalysis">
+                            <p class="placeholder-text">Select drugs to see how they work in the body...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Clinical Risks</h3>
+                        <div class="ai-text" id="clinicalRisks">
+                            <p class="placeholder-text">Simulation required to assess clinical risks...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Dosing Guidance</h3>
+                        <div class="ai-text" id="dosingGuidance">
+                            <p class="placeholder-text">Patient profile and drug selection required...</p>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3 class="section-subtitle">Recommendations</h3>
+                        <div class="ai-text" id="recommendations">
+                            <p class="placeholder-text">Run simulation to receive clinical recommendations...</p>
+                        </div>
+                    </div>
+
+                    <div class="rxnorm-section" id="rxnormSection" style="display:none;">
+                        <div class="rxnorm-header">
+                            <span class="rxnorm-badge">RxNorm / NLM</span>
+                            <span class="rxnorm-title">Real-World Interaction Data</span>
+                        </div>
+                        <div id="rxnormContent" class="rxnorm-content"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB: DRUG DISCOVERY ENGINE -->
+        <div id="discoveryTab" class="tab-content" style="display:none;">
+
+            <!-- Sub-tab switcher -->
+            <div class="ai-subtab-bar">
+                <button class="ai-subtab active" data-subtab="discovery" onclick="switchAISubtab('discovery')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                    Drug Discovery
+                </button>
+                <button class="ai-subtab" data-subtab="chatbot" onclick="switchAISubtab('chatbot')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    AI Chatbot
+                </button>
+            </div>
+
+            <!-- SUBTAB: DRUG DISCOVERY -->
+            <div id="discoverySubtab" class="ai-subtab-content active" style="display:flex;">
+            <div class="discovery-layout">
+
+                <!-- LEFT COLUMN: Input + Fetched Drugs -->
+                <div class="discovery-left">
+                    <div class="discovery-hero">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                        <div>
+                            <h2 class="discovery-title">Drug Discovery Engine</h2>
+                            <p class="discovery-subtitle">ML + tabular regression on real FDA pharmacokinetic data</p>
+                        </div>
+                        <div class="discovery-api-status">
+                            <span class="status-dot" id="chatStatusDot"></span>
+                            <span id="chatStatusText">Connecting...</span>
+                        </div>
+                    </div>
+
+                    <div class="discovery-input-section">
+                        <label class="control-label" for="conditionInput">Target Condition / Disease</label>
+                        <div class="condition-input-row">
+                            <input type="text" id="conditionInput" class="text-input condition-input"
+                                   placeholder="e.g., type 2 diabetes, hypertension, depression..."
+                                   onkeydown="if(event.key==='Enter') runDiscovery()" />
+                            <button id="discoverBtn" class="btn btn-primary btn-discover" onclick="runDiscovery()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                                Analyze
+                            </button>
+                        </div>
+                        <div class="suggest-chips">
+                            <span class="suggest-label">Try:</span>
+                            <button class="suggest-chip" onclick="setCondition('type 2 diabetes')">Type 2 Diabetes</button>
+                            <button class="suggest-chip" onclick="setCondition('hypertension')">Hypertension</button>
+                            <button class="suggest-chip" onclick="setCondition('major depression')">Depression</button>
+                            <button class="suggest-chip" onclick="setCondition('heart failure')">Heart Failure</button>
+                            <button class="suggest-chip" onclick="setCondition('bacterial pneumonia')">Pneumonia</button>
+                        </div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <!-- Fetched Drugs Card -->
+                    <div class="discovery-card" style="display:none;" id="fetchedDrugsCard">
+                        <div class="discovery-card-header">
+                            <span class="discovery-card-title">Drugs for "<span id="conditionLabel">—</span>"</span>
+                            <span class="source-badge">OpenFDA</span>
+                        </div>
+                        <div id="fetchedDrugsList" class="fetched-drugs-list"></div>
+                        <div class="section-divider"></div>
+                        <button id="loadSelectedBtn" class="btn btn-secondary" style="display:none; width:100%;"
+                                onclick="loadSelectedToSimulation()">
+                            Load Selected into Simulation
+                        </button>
+                    </div>
+
+                    <p class="chat-disclaimer" style="margin-top:auto;">
+                        Discovery results are educational. Validate with clinical guidelines before use.
+                    </p>
+                </div>
+
+                <!-- CENTER COLUMN: Property Table + ML Results -->
+                <div class="discovery-center">
+
+                    <!-- Loading State -->
+                    <div id="discoveryLoading" style="display:none;" class="discovery-loading-state">
+                        <div class="discovery-spinner-wrap">
+                            <div class="discovery-spinner"></div>
+                        </div>
+                        <div class="discovery-steps">
+                            <div class="load-step" id="loadStep1">Querying FDA drug database...</div>
+                            <div class="load-step" id="loadStep2">Fetching pharmacokinetic data...</div>
+                            <div class="load-step" id="loadStep3">Building property matrix...</div>
+                            <div class="load-step" id="loadStep4">Running ML regression analysis...</div>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="discoveryResults" style="display:none;">
+
+                        <!-- Property Table -->
+                        <div class="discovery-card property-table-card">
+                            <div class="discovery-card-header">
+                                <span class="discovery-card-title">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                                    Drug Property Matrix
+                                </span>
+                                <span class="source-badge">PubChem + FDA + Claude PK</span>
+                            </div>
+                            <div id="propertyTableContainer">
+                                <p class="placeholder-text">Fetching drug data...</p>
+                            </div>
+                        </div>
+
+                        <!-- Regression Insights -->
+                        <div class="discovery-card regression-card">
+                            <div class="discovery-card-header">
+                                <span class="discovery-card-title">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                    ML Regression Insights
+                                </span>
+                                <span class="source-badge ml-badge">Tabular Regression</span>
+                            </div>
+                            <div id="regressionInsights">
+                                <p class="placeholder-text">Running regression analysis...</p>
+                            </div>
+                        </div>
+
+                        <!-- Combinations -->
+                        <div class="discovery-card">
+                            <div class="discovery-card-header">
+                                <span class="discovery-card-title">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                                    Predicted Drug Combinations
+                                </span>
+                                <span class="source-badge">Claude AI</span>
+                            </div>
+                            <p class="top-rec-text" id="topRecommendation"></p>
+                            <div id="combinationResults"></div>
+                        </div>
+
+                        <!-- Safety Notes -->
+                        <div class="discovery-card" id="safetyNotesCard" style="display:none;">
+                            <div class="discovery-card-header">
+                                <span class="discovery-card-title">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warning-color)" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    Safety Notes
+                                </span>
+                            </div>
+                            <ul id="safetyNotesList" class="safety-notes-list"></ul>
+                        </div>
+
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="discoveryEmptyState" class="discovery-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.25)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                        <p>Enter a condition and click Analyze to discover drug combinations using ML regression on real FDA data.</p>
+                        <p class="text-muted" style="font-size:0.75rem; margin-top:0.5rem;">Each combination is scored by synergy, PK compatibility, and evidence base. Results can be loaded directly into the simulation.</p>
+                    </div>
+                </div>
+
+            </div>
+            </div><!-- end discoverySubtab -->
+
+            <!-- SUBTAB: AI CHATBOT -->
+            <div id="chatbotSubtab" class="ai-subtab-content" style="display:none;">
+                <div class="chat-layout">
+                    <aside class="chat-sidebar">
+                        <!-- Scrollable upper section -->
+                        <div class="chat-sidebar-scroll">
+                        <h3 class="sidebar-title">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Simulation Context
+                        </h3>
+                        <div id="chatContext" class="chat-context-content">
+                            <p class="placeholder-text">No simulation active. Go to Simulation Lab first.</p>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <h4 class="sidebar-subtitle">Quick Questions</h4>
+                        <div class="quick-questions">
+                            <button class="quick-q-btn" data-q="What are the main risks and mechanisms of interaction between these drugs?">
+                                <span class="qq-icon">⚠</span> Main interaction risks?
+                            </button>
+                            <button class="quick-q-btn" data-q="Explain the pharmacokinetics of each drug and how they affect each other's absorption and elimination.">
+                                <span class="qq-icon">🔬</span> Pharmacokinetics explained?
+                            </button>
+                            <button class="quick-q-btn" data-q="Are there safer alternative drug combinations that achieve the same therapeutic goals?">
+                                <span class="qq-icon">💊</span> Safer alternatives?
+                            </button>
+                            <button class="quick-q-btn" data-q="What clinical monitoring parameters should be checked when using this drug combination?">
+                                <span class="qq-icon">📋</span> What to monitor?
+                            </button>
+                            <button class="quick-q-btn" data-q="How should doses be adjusted for this patient given their age, weight, and organ function?">
+                                <span class="qq-icon">👤</span> Patient-specific dosing?
+                            </button>
+                            <button class="quick-q-btn" data-q="What are the signs and symptoms of toxicity or adverse reactions I should watch for?">
+                                <span class="qq-icon">🚨</span> Signs of toxicity?
+                            </button>
+                        </div>
+
+                        </div><!-- end chat-sidebar-scroll -->
+
+                        <!-- FDA search OUTSIDE the scrollable area so dropdown isn't clipped -->
+                        <div class="chat-sidebar-fda">
+                            <div class="section-divider" style="margin:0 0 0.6rem;"></div>
+                            <h4 class="sidebar-subtitle">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                FDA Drug Search
+                            </h4>
+                            <div class="autocomplete-wrapper">
+                                <input type="text" id="fdaSearchSidebar" class="text-input" placeholder="Search OpenFDA database..." autocomplete="off">
+                                <div class="autocomplete-spinner" id="fdaSpinnerSidebar" style="display:none;"><div class="spinner-small"></div></div>
+                                <div class="autocomplete-list" id="fdaAutocompleteSidebar"></div>
+                            </div>
+                            <div id="fdaCardSidebar" class="fda-mini-card" style="display:none;"></div>
+                        </div>
+                    </aside>
+
+                    <main class="chat-main">
+                        <div class="chat-header">
+                            <h2>AI Pharmacology Assistant</h2>
+                            <div class="chat-status">
+                                <span id="chatModeBadge" class="chat-mode-badge general">General mode</span>
+                                <span class="status-dot" id="chatStatusDot2"></span>
+                                <span id="chatStatusText2">Connecting...</span>
+                            </div>
+                        </div>
+
+                        <div id="chatMessages" class="chat-messages" role="log" aria-live="polite">
+                            <div class="chat-message assistant">
+                                <div class="message-avatar">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                                </div>
+                                <div class="message-content">
+                                    <p>Hello! I'm your AI pharmacology assistant. Ask me anything about drugs, interactions, mechanisms, dosing, or patient safety — no simulation required.</p>
+                                    <p>Optionally, load drugs in the <strong>Simulation Lab</strong> and I'll use your specific simulation data to give more targeted answers.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <div class="chat-input-wrapper">
+                                <textarea
+                                    id="chatInput"
+                                    class="chat-input"
+                                    placeholder="Ask about drug interactions, mechanisms, dosing, patient safety..."
+                                    rows="2"
+                                    aria-label="Chat message input"
+                                ></textarea>
+                                <button id="sendChatBtn" class="btn-send" aria-label="Send message">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+                                </button>
+                            </div>
+                            <p class="chat-disclaimer">AI responses are educational only. Always consult a licensed healthcare professional for clinical decisions.</p>
+                        </div>
+                    </main>
+                </div>
+            </div><!-- end chatbotSubtab -->
+
+        </div><!-- end discoveryTab -->
+
+    </div>
+
+    <!-- REPORT MODAL -->
+    <div class="modal-overlay" id="reportModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="reportModalTitle">Simulation Report</h2>
+                <button class="modal-close" id="modalClose" aria-label="Close report">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="reportContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="printReportBtn" style="width:auto; padding: 0.7rem 2rem;">Print / Save PDF</button>
+                <button class="btn btn-secondary" id="closeReportBtn" style="width:auto; padding: 0.7rem 2rem;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
