@@ -1132,17 +1132,17 @@ async function checkServerStatus() {
       dot.className = "status-dot partial";
       text.textContent = "Server up · Claude not configured";
       chatDot.className = "status-dot partial";
-      chatText.textContent = "Template mode";
+      chatText.textContent = "Online";
       const d2 = document.getElementById("chatStatusDot2");
       const t2 = document.getElementById("chatStatusText2");
       if (d2) {
         d2.className = "status-dot partial";
-        t2.textContent = "Template mode";
+        t2.textContent = "Online";
       }
     }
   } catch {
     dot.className = "status-dot disconnected";
-    text.textContent = "Template mode";
+    text.textContent = "Online";
     chatDot.className = "status-dot disconnected";
     chatText.textContent = "Offline";
     const d2 = document.getElementById("chatStatusDot2");
