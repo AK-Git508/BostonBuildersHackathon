@@ -163,7 +163,8 @@ app.post("/api/chat", async (req, res) => {
         .json({ error: "OPENROUTER_API_KEY not configured" });
     }
 
-    const systemPrompt = buildOpenRouterSystemPrompt(`You are an expert clinical pharmacologist and drug safety specialist assisting with a drug interaction simulation lab.
+    const systemPrompt =
+      buildOpenRouterSystemPrompt(`You are an expert clinical pharmacologist and drug safety specialist assisting with a drug interaction simulation lab.
 You provide evidence-based, educational information about drug interactions, pharmacokinetics, dosing, and patient safety.
 ${systemContext ? `\nCurrent simulation context:\n${systemContext}` : ""}
 
@@ -191,7 +192,7 @@ Guidelines:
 });
 
 // ============================================================
-// GET /api/rxnorm — Real drug interactions from NLM RxNorm
+// GET /api/rxnorm — Real drug interactions from NLM RxNorm_
 // ============================================================
 
 app.get("/api/rxnorm", async (req, res) => {
@@ -684,7 +685,9 @@ app.post("/api/pharmacology-chat", async (req, res) => {
     const messages = [
       {
         role: "system",
-        content: buildOpenRouterSystemPrompt(`You are an expert clinical pharmacologist. Answer questions accurately and concisely.\nUse **bold** for drug names and key risks. Keep responses under 400 words.\nAlways recommend professional medical consultation for clinical decisions.\n\nWhen a user describes a medical condition or disease, ALWAYS recommend specific evidence-based drug combinations:\n- List 2-4 drug combinations with evidence scores (e.g., "Evidence: 9/10")\n- For each combination: name the drugs, explain the mechanism/rationale, list key monitoring parameters\n- Format as: "**Drug A + Drug B** — [why this works] | Monitor: [parameters]"\n- Include first-line vs second-line options when relevant\n- Mention key contraindications or special populations (renal/hepatic impairment, elderly, pregnancy)\n${groundingContext ? `\nReal-time data retrieved from OpenFDA, RxNorm (NLM), and PubChem:\n${groundingContext}` : ""}`),
+        content: buildOpenRouterSystemPrompt(
+          `You are an expert clinical pharmacologist. Answer questions accurately and concisely.\nUse **bold** for drug names and key risks. Keep responses under 400 words.\nAlways recommend professional medical consultation for clinical decisions.\n\nWhen a user describes a medical condition or disease, ALWAYS recommend specific evidence-based drug combinations:\n- List 2-4 drug combinations with evidence scores (e.g., "Evidence: 9/10")\n- For each combination: name the drugs, explain the mechanism/rationale, list key monitoring parameters\n- Format as: "**Drug A + Drug B** — [why this works] | Monitor: [parameters]"\n- Include first-line vs second-line options when relevant\n- Mention key contraindications or special populations (renal/hepatic impairment, elderly, pregnancy)\n${groundingContext ? `\nReal-time data retrieved from OpenFDA, RxNorm (NLM), and PubChem:\n${groundingContext}` : ""}`,
+        ),
       },
       ...(history || []).slice(-8),
       { role: "user", content: message },
