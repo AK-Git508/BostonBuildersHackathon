@@ -490,7 +490,7 @@ function addDrugSlot() {
         showToast('Maximum 3 drugs at once', 'warning');
         return;
     }
-    state.slots.push({ drugId: null, dose: 0, adminTime: 0, frequency: 'single', collapsed: false });
+    state.slots.push({ drugId: null, dose: 0, adminTime: 0, frequency: 'single', route: 'oral', collapsed: false });
     renderSlots();
     updateAddDrugBtn();
 }
@@ -569,6 +569,21 @@ function renderSlots() {
                     </select>
                 </div>
 
+                <div class="control-group">
+                    <label>Route of Administration</label>
+                    <select class="dropdown" onchange="onRouteChange(${index}, this.value)" aria-label="Route of administration for drug ${index + 1}">
+                        <option value="oral"          ${slot.route === 'oral'          ? 'selected' : ''}>Oral (PO)</option>
+                        <option value="intravenous"   ${slot.route === 'intravenous'   ? 'selected' : ''}>Intravenous (IV)</option>
+                        <option value="intramuscular" ${slot.route === 'intramuscular' ? 'selected' : ''}>Intramuscular (IM)</option>
+                        <option value="subcutaneous"  ${slot.route === 'subcutaneous'  ? 'selected' : ''}>Subcutaneous (SC)</option>
+                        <option value="sublingual"    ${slot.route === 'sublingual'    ? 'selected' : ''}>Sublingual (SL)</option>
+                        <option value="transdermal"   ${slot.route === 'transdermal'   ? 'selected' : ''}>Transdermal (TD)</option>
+                        <option value="inhaled"       ${slot.route === 'inhaled'       ? 'selected' : ''}>Inhaled</option>
+                        <option value="topical"       ${slot.route === 'topical'       ? 'selected' : ''}>Topical</option>
+                        <option value="rectal"        ${slot.route === 'rectal'        ? 'selected' : ''}>Rectal (PR)</option>
+                    </select>
+                </div>
+
                 <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; background:var(--bg-card); padding:0.5rem; border-radius:6px;">
                     <strong style="color:var(--text-secondary);">${drug.drugClass}</strong><br>
                     t½ = ${drug.halfLife}h · F = ${(drug.bioavailability*100).toFixed(0)}% · Tmax ≈ ${drug.Tmax}h<br>
@@ -611,6 +626,10 @@ function onAdminTimeChange(index, value, display) {
 
 function onFrequencyChange(index, value) {
     state.slots[index].frequency = value;
+}
+
+function onRouteChange(index, value) {
+    state.slots[index].route = value;
 }
 
 function updateDrugsActiveCount() {
