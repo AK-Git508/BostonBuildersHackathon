@@ -563,9 +563,9 @@ function renderSlots() {
                     <label>Dosing Frequency</label>
                     <select class="dropdown" onchange="onFrequencyChange(${index}, this.value)" aria-label="Frequency for drug ${index + 1}">
                         <option value="single" ${slot.frequency === 'single' ? 'selected' : ''}>Single dose</option>
-                        <option value="bid" ${slot.frequency === 'bid' ? 'selected' : ''}>BID — every 12h</option>
-                        <option value="tid" ${slot.frequency === 'tid' ? 'selected' : ''}>TID — every 8h</option>
-                        <option value="qid" ${slot.frequency === 'qid' ? 'selected' : ''}>QID — every 6h</option>
+                        <option value="bid" ${slot.frequency === 'bid' ? 'selected' : ''}>BID</option>
+                        <option value="tid" ${slot.frequency === 'tid' ? 'selected' : ''}>TID</option>
+                        <option value="qid" ${slot.frequency === 'qid' ? 'selected' : ''}>QID</option>
                     </select>
                 </div>
 
