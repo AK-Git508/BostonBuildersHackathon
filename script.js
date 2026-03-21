@@ -1796,36 +1796,54 @@ function updateBodyAtTime(t) {
 
     if (maxIntensity < 0.02) return; // essentially no drug here yet
 
+    // Determine risk level for this organ:
+    // RED   = high-severity interaction hitting this organ, or patient impairment on this organ
+    // YELLOW = moderate interaction or mild patient risk
+    // GREEN  = drug reaching organ normally, no concern
+    let risk = "safe"; // green
     if (isDanger) {
-      // Red→orange danger spectrum; faster pulse at higher concentration
-      const g = Math.round(30 + (1 - maxIntensity) * 120);
-      el.style.fill = `rgba(255,${g},30,${0.25 + maxIntensity * 0.55})`;
-      el.style.stroke = `rgba(255,${g},30,0.95)`;
-      el.style.strokeWidth = `${1.5 + maxIntensity * 1.5}`;
+      risk = "danger"; // red
+    } else {
+      // Check moderate interactions on this organ
+      const modIx = interactions.filter((ix) => ix.severity === "medium");
+      const hasMod = modIx.some((ix) => drugIds.includes(ix.drugAId) && drugIds.includes(ix.drugBId));
+      if (hasMod) risk = "warn";
+      // Patient-specific organ risks
+      if (organKey === "kidneys" && state.patient.kidneyFunction < 60) risk = "danger";
+      else if (organKey === "kidneys" && state.patient.kidneyFunction < 80 && risk === "safe") risk = "warn";
+      if (organKey === "liver" && state.patient.liverFunction !== "normal") {
+        risk = state.patient.liverFunction === "severe" ? "danger" : "warn";
+      }
+      // Elderly + brain = caution for CNS drugs
+      if (organKey === "brain" && state.patient.age > 70 && risk === "safe") risk = "warn";
+    }
+
+    const alpha = 0.2 + maxIntensity * 0.55;
+    const strokeAlpha = 0.5 + maxIntensity * 0.5;
+    const sw = 1.5 + maxIntensity * 1.5;
+
+    if (risk === "danger") {
+      el.style.fill = `rgba(239,68,68,${alpha})`;
+      el.style.stroke = `rgba(239,68,68,${strokeAlpha})`;
+      el.style.strokeWidth = `${sw}`;
       el.style.filter = "url(#organGlowDanger)";
       el.classList.add("danger-zone");
       el.style.animationDuration = `${Math.max(0.6, 1.4 - maxIntensity * 0.8)}s`;
-    } else if (drugs.length > 1) {
-      // Multiple drugs, no high danger — purple, moderate pulse
-      el.style.fill = `rgba(157,78,221,${0.12 + maxIntensity * 0.48})`;
-      el.style.stroke = `rgba(157,78,221,${0.5 + maxIntensity * 0.5})`;
-      el.style.strokeWidth = `${1 + maxIntensity * 1.5}`;
-      el.style.filter = "url(#organGlowMulti)";
+    } else if (risk === "warn") {
+      el.style.fill = `rgba(234,179,8,${alpha * 0.85})`;
+      el.style.stroke = `rgba(234,179,8,${strokeAlpha})`;
+      el.style.strokeWidth = `${sw}`;
+      el.style.filter = "url(#organGlowWarn)";
       el.classList.add("pulsing");
       el.style.animationDuration = `${Math.max(1, 2.5 - maxIntensity * 1.2)}s`;
     } else {
-      // Single drug — drug's own color
-      const c = DRUG_COLORS_RGB[drugs[0].localIdx % DRUG_COLORS_RGB.length];
-      el.style.fill = `rgba(${c.r},${c.g},${c.b},${0.08 + maxIntensity * 0.52})`;
-      el.style.stroke = `rgba(${c.r},${c.g},${c.b},${0.4 + maxIntensity * 0.6})`;
-      el.style.strokeWidth = `${1 + maxIntensity * 1.5}`;
-      el.style.filter =
-        maxIntensity > 0.1
-          ? `url(#organGlow${drugs[0].localIdx % MAX_DRUGS})`
-          : "";
+      el.style.fill = `rgba(34,197,94,${alpha})`;
+      el.style.stroke = `rgba(34,197,94,${strokeAlpha})`;
+      el.style.strokeWidth = `${sw}`;
+      el.style.filter = maxIntensity > 0.1 ? "url(#organGlowSafe)" : "";
       if (maxIntensity > 0.05) {
         el.classList.add("pulsing");
-        el.style.animationDuration = `${Math.max(0.8, 3 - maxIntensity * 2)}s`;
+        el.style.animationDuration = `${Math.max(1, 3 - maxIntensity * 2)}s`;
       }
     }
   });
@@ -1860,7 +1878,22 @@ function updateBodyAtTime(t) {
       const totalConc = data.drugs.reduce((s, d) => s + d.concentration, 0);
       if (totalConc < 0.1) return;
       const text = `${totalConc.toFixed(0)} ng/mL`;
-      const color = data.drugs.length > 1 ? "#c084fc" : DRUG_COLORS[data.drugs[0].localIdx % DRUG_COLORS.length];
+      // Match color to organ risk status
+      const snap = state.organSnapshot[svgId];
+      let color = "#22c55e"; // green default
+      if (snap && snap.isDanger) color = "#ef4444";
+      else if (snap) {
+        const oKey = snap.organKey;
+        if (oKey === "kidneys" && state.patient.kidneyFunction < 60) color = "#ef4444";
+        else if (oKey === "kidneys" && state.patient.kidneyFunction < 80) color = "#eab308";
+        else if (oKey === "liver" && state.patient.liverFunction === "severe") color = "#ef4444";
+        else if (oKey === "liver" && state.patient.liverFunction !== "normal") color = "#eab308";
+        else {
+          const modIx = interactions.filter((ix) => ix.severity === "medium");
+          const drugIdsHere = data.drugs.map((d) => d.drugId);
+          if (modIx.some((ix) => drugIdsHere.includes(ix.drugAId) && drugIdsHere.includes(ix.drugBId))) color = "#eab308";
+        }
+      }
       const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       bg.setAttribute("x", pos.x - 28);
       bg.setAttribute("y", pos.y - 8);
@@ -2259,11 +2292,10 @@ function renderOrganLegend(activeSlots, organDrugMap) {
   // Color key
   const colorKey = `<div class="legend-color-key">
         <div class="ck-title">Legend</div>
-        <div class="ck-row"><span class="ck-dot" style="background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span> Drug concentration</div>
-        <div class="ck-row"><span class="ck-dot" style="background:#ff3366;box-shadow:0 0 6px #ff3366"></span> Toxicity / interaction risk</div>
-        <div class="ck-row"><span class="ck-dot" style="background:#9d4edd;box-shadow:0 0 6px #9d4edd"></span> Multiple drugs overlap</div>
-        <div class="ck-row"><span class="ck-pulse-icon">◉</span> Pulsing = active processing</div>
-        <div class="ck-row ck-intensity">Intensity = % of peak concentration</div>
+        <div class="ck-row"><span class="ck-dot" style="background:#22c55e;box-shadow:0 0 6px #22c55e"></span> Safe — drug reaching target normally</div>
+        <div class="ck-row"><span class="ck-dot" style="background:#eab308;box-shadow:0 0 6px #eab308"></span> Caution — moderate risk or impairment</div>
+        <div class="ck-row"><span class="ck-dot" style="background:#ef4444;box-shadow:0 0 6px #ef4444"></span> Danger — interaction or organ impairment</div>
+        <div class="ck-row"><span class="ck-pulse-icon">◉</span> Pulsing = active drug processing</div>
     </div>`;
 
   if (!Object.keys(displayMap).length) {

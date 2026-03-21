@@ -1736,8 +1736,8 @@ body {
   filter: url(#organGlowMulti);
 }
 .organ.danger-zone {
-  fill: rgba(255, 51, 102, 0.5);
-  stroke: var(--danger-color);
+  fill: rgba(239, 68, 68, 0.5);
+  stroke: #ef4444;
   stroke-width: 2.5;
   filter: url(#organGlowDanger);
   animation: organDangerPulse 1s ease-in-out infinite;
