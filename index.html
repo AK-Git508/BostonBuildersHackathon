@@ -69,10 +69,16 @@
                     </div>
                 </div>
 
-                <button class="landing-cta" onclick="enterApp()">
-                    <span>Enter Lab</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
+                <div class="landing-buttons">
+                    <button class="landing-cta" onclick="enterApp()">
+                        <span>Enter Lab</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                    <button class="landing-learn-more" onclick="document.getElementById('learnMoreSection').scrollIntoView({behavior:'smooth'})">
+                        <span>Learn More</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Right: pill visualization -->
@@ -128,6 +134,40 @@
                     </svg>
                 </div>
             </div>
+        </div>
+
+        <!-- Learn More Section -->
+        <div id="learnMoreSection" class="landing-learn-section">
+            <h2 class="learn-section-title">How It Works</h2>
+            <div class="learn-cards">
+                <div class="learn-card">
+                    <div class="learn-card-icon learn-icon-blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3>Real Medical Data</h3>
+                    <p>Built on verified datasets from OpenFDA, RxNorm NLM, and PubChem pharmacological databases for accurate drug information.</p>
+                </div>
+                <div class="learn-card">
+                    <div class="learn-card-icon learn-icon-purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                    </div>
+                    <h3>AI-Powered Analysis</h3>
+                    <p>Machine learning regression models predict drug interactions, optimal dosing, and potential side effects in real time.</p>
+                </div>
+                <div class="learn-card">
+                    <div class="learn-card-icon learn-icon-cyan">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <h3>Safety Alerts</h3>
+                    <p>Instant danger detection with organ-level visualization helps identify harmful drug combinations before they cause harm.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Made By Section -->
+        <div class="landing-team-section">
+            <p class="landing-team-label">Made by</p>
+            <p class="landing-team-names">Aariz Khan, Rishab Paili, Srihan Anand, and Nitin Suresh</p>
         </div>
 
         <p class="landing-footer">Educational tool only · Not for clinical use · Data from OpenFDA, RxNorm NLM, PubChem</p>

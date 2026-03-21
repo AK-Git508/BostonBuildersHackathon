@@ -13,7 +13,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-y: auto;
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
 .landing-screen.landing-exit {
@@ -141,9 +141,121 @@
 }
 .landing-dot-pulse { animation: landingDotPulse 2.5s ease-in-out infinite; }
 
+/* Landing buttons row */
+.landing-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+.landing-learn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+.landing-learn-more:hover {
+    border-color: rgba(124,58,237,0.5);
+    color: #fff;
+    background: rgba(124,58,237,0.1);
+}
+
+/* Learn More Section */
+.landing-learn-section {
+    width: 100%;
+    max-width: 920px;
+    padding: 2rem 2rem 0;
+    position: relative;
+    z-index: 1;
+    margin-top: 2rem;
+}
+.learn-section-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+.learn-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+.learn-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: border-color 0.25s ease, background 0.25s ease;
+}
+.learn-card:hover {
+    border-color: rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.06);
+}
+.learn-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+.learn-icon-blue { background: rgba(0,212,255,0.12); color: #00d4ff; }
+.learn-icon-purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.learn-icon-cyan { background: rgba(6,182,212,0.12); color: #22d3ee; }
+.learn-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.5rem;
+}
+.learn-card p {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Made By / Team Section */
+.landing-team-section {
+    text-align: center;
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+}
+.landing-team-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.25);
+    margin: 0 0 0.4rem;
+}
+.landing-team-names {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+    background: linear-gradient(90deg, #00d4ff, #a78bfa, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
 .landing-footer {
-    position: absolute;
-    bottom: 1.2rem;
+    position: relative;
+    margin-top: 1.5rem;
+    margin-bottom: 1.2rem;
     font-size: 0.65rem;
     color: rgba(255,255,255,0.2);
     letter-spacing: 0.04em;
