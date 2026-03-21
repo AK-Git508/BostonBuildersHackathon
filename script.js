@@ -50,7 +50,7 @@ const DRUG_DB = {
     doseRange: [81, 975],
     doseStep: 81,
     primaryOrgan: "blood",
-    affectedOrgans: ["liver", "gi", "kidneys"],
+    affectedOrgans: ["liver", "gi", "kidneys", "stomach", "spleen"],
     mechanism:
       "Irreversibly inhibits COX-1 and COX-2 enzymes, blocking prostaglandin and thromboxane synthesis.",
     uses: ["Pain relief", "Fever", "Antiplatelet", "Anti-inflammatory"],
@@ -100,7 +100,7 @@ const DRUG_DB = {
     doseRange: [200, 800],
     doseStep: 200,
     primaryOrgan: "liver",
-    affectedOrgans: ["liver", "kidneys", "gi"],
+    affectedOrgans: ["liver", "kidneys", "gi", "stomach", "muscle"],
     mechanism:
       "Reversibly inhibits COX-1 and COX-2. Reduces prostaglandin synthesis causing analgesic, antipyretic, and anti-inflammatory effects.",
     uses: ["Pain relief", "Fever", "Inflammation", "Dysmenorrhea"],
@@ -156,7 +156,7 @@ const DRUG_DB = {
     doseRange: [1, 15],
     doseStep: 1,
     primaryOrgan: "liver",
-    affectedOrgans: ["liver", "blood"],
+    affectedOrgans: ["liver", "blood", "gi", "spleen"],
     mechanism:
       "Inhibits vitamin K epoxide reductase (VKORC1), blocking clotting factors II, VII, IX, X. Very narrow therapeutic index.",
     uses: [
@@ -226,7 +226,7 @@ const DRUG_DB = {
     doseRange: [500, 2000],
     doseStep: 500,
     primaryOrgan: "kidneys",
-    affectedOrgans: ["gi", "liver", "kidneys"],
+    affectedOrgans: ["gi", "liver", "kidneys", "pancreas", "muscle"],
     mechanism:
       "Activates AMPK, reducing hepatic gluconeogenesis. Improves peripheral insulin sensitivity. Does not cause hypoglycemia as monotherapy.",
     uses: ["Type 2 diabetes", "Prediabetes", "Insulin resistance", "PCOS"],
@@ -265,7 +265,7 @@ const DRUG_DB = {
     doseRange: [2.5, 40],
     doseStep: 2.5,
     primaryOrgan: "kidneys",
-    affectedOrgans: ["kidneys", "heart", "blood"],
+    affectedOrgans: ["kidneys", "heart", "blood", "lungs", "bladder"],
     mechanism:
       "Inhibits ACE, blocking angiotensin I → II conversion. Reduces vasoconstriction, aldosterone secretion, and sodium retention.",
     uses: [
@@ -311,7 +311,7 @@ const DRUG_DB = {
     doseRange: [10, 80],
     doseStep: 10,
     primaryOrgan: "liver",
-    affectedOrgans: ["liver"],
+    affectedOrgans: ["liver", "muscle", "gi"],
     mechanism:
       "Competitively inhibits HMG-CoA reductase in the liver. Upregulates hepatic LDL receptors, increasing LDL-C clearance.",
     uses: [
@@ -346,7 +346,7 @@ const DRUG_DB = {
     doseRange: [25, 200],
     doseStep: 25,
     primaryOrgan: "brain",
-    affectedOrgans: ["brain", "liver", "gi"],
+    affectedOrgans: ["brain", "liver", "gi", "kidneys"],
     mechanism:
       "Selectively inhibits serotonin transporter (SERT), increasing synaptic serotonin. Takes 2–4 weeks for full effect.",
     uses: [
@@ -393,7 +393,7 @@ const DRUG_DB = {
     doseRange: [10, 40],
     doseStep: 10,
     primaryOrgan: "gi",
-    affectedOrgans: ["gi", "liver"],
+    affectedOrgans: ["gi", "liver", "stomach", "pancreas"],
     mechanism:
       "Irreversibly inhibits H+/K+-ATPase proton pump in gastric parietal cells, reducing acid secretion by >90%.",
     uses: [
@@ -430,7 +430,7 @@ const DRUG_DB = {
     doseRange: [250, 1000],
     doseStep: 250,
     primaryOrgan: "kidneys",
-    affectedOrgans: ["lungs", "gi", "kidneys"],
+    affectedOrgans: ["lungs", "gi", "kidneys", "bladder"],
     mechanism:
       "Beta-lactam that inhibits bacterial cell wall synthesis by binding PBPs. Bactericidal. Renally excreted unchanged.",
     uses: [
@@ -464,7 +464,7 @@ const DRUG_DB = {
     doseRange: [325, 1000],
     doseStep: 325,
     primaryOrgan: "liver",
-    affectedOrgans: ["liver"],
+    affectedOrgans: ["liver", "brain", "gi"],
     mechanism:
       "Inhibits COX-3 centrally. Modulates endocannabinoid and serotonergic pathways. Hepatotoxic in overdose via NAPQI.",
     uses: ["Pain", "Fever", "Osteoarthritis", "Safe NSAID alternative"],
@@ -506,9 +506,14 @@ const ORGAN_SVG_MAP = {
   heart: ["organHeart"],
   lungs: ["organLungsL", "organLungsR"],
   liver: ["organLiver"],
-  gi: ["organGI", "organIntestines"],
+  gi: ["organStomach", "organIntestines"],
+  stomach: ["organStomach"],
   kidneys: ["organKidneyL", "organKidneyR"],
   blood: ["organHeart"],
+  spleen: ["organSpleen"],
+  pancreas: ["organPancreas"],
+  bladder: ["organBladder"],
+  muscle: ["organMuscleL", "organMuscleR"],
 };
 
 const ORGAN_ROLES = {
@@ -546,6 +551,31 @@ const ORGAN_ROLES = {
     name: "Blood / Plasma",
     role: "Distribution vehicle",
     desc: "Drug transported bound to plasma proteins (albumin). Displacement interactions raise free drug concentration and amplify effects.",
+  },
+  stomach: {
+    name: "Stomach",
+    role: "Initial absorption",
+    desc: "Acidic environment (pH 1-3) begins drug dissolution. Gastric emptying rate affects absorption speed. Antacids and food alter drug bioavailability.",
+  },
+  spleen: {
+    name: "Spleen",
+    role: "Immune filtering",
+    desc: "Filters blood and removes damaged cells. Immunosuppressants and anticoagulants affect splenic function. Drug-induced thrombocytopenia may cause splenic sequestration.",
+  },
+  pancreas: {
+    name: "Pancreas",
+    role: "Endocrine / Exocrine",
+    desc: "Produces insulin and digestive enzymes. Key target for diabetes medications. Some drugs (e.g., statins, GLP-1 agonists) affect pancreatic function.",
+  },
+  bladder: {
+    name: "Bladder",
+    role: "Urine storage / Excretion",
+    desc: "Collects renally-excreted drug metabolites. High local concentrations of certain drugs may cause irritation. Anticholinergics affect bladder tone.",
+  },
+  muscle: {
+    name: "Muscle Tissue",
+    role: "Distribution / Storage",
+    desc: "Large tissue mass acts as drug reservoir, especially for lipophilic drugs. Blood flow to muscle affects distribution speed. IM injection site for some drugs.",
   },
 };
 
@@ -1799,6 +1829,55 @@ function updateBodyAtTime(t) {
       }
     }
   });
+
+  // Show organ labels and concentration values on SVG
+  const labelsGroup = document.getElementById("organLabelsGroup");
+  const concGroup = document.getElementById("concLabelsGroup");
+  if (labelsGroup) labelsGroup.style.display = "";
+  if (concGroup) {
+    concGroup.style.display = "";
+    concGroup.innerHTML = "";
+    // Positions for concentration labels (svgId → {x, y})
+    const concPos = {
+      organBrain: { x: 220, y: 48 },
+      organHeart: { x: 160, y: 252 },
+      organLungsL: { x: 58, y: 225 },
+      organLungsR: { x: 248, y: 225 },
+      organLiver: { x: 240, y: 315 },
+      organStomach: { x: 68, y: 325 },
+      organKidneyL: { x: 42, y: 368 },
+      organKidneyR: { x: 258, y: 368 },
+      organIntestines: { x: 160, y: 395 },
+      organBladder: { x: 160, y: 438 },
+      organPancreas: { x: 140, y: 358 },
+      organSpleen: { x: 52, y: 298 },
+      organMuscleL: { x: 110, y: 510 },
+      organMuscleR: { x: 210, y: 510 },
+    };
+    Object.entries(organData).forEach(([svgId, data]) => {
+      const pos = concPos[svgId];
+      if (!pos || data.maxIntensity < 0.02) return;
+      const totalConc = data.drugs.reduce((s, d) => s + d.concentration, 0);
+      if (totalConc < 0.1) return;
+      const text = `${totalConc.toFixed(0)} ng/mL`;
+      const color = data.drugs.length > 1 ? "#c084fc" : DRUG_COLORS[data.drugs[0].localIdx % DRUG_COLORS.length];
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      bg.setAttribute("x", pos.x - 28);
+      bg.setAttribute("y", pos.y - 8);
+      bg.setAttribute("width", 56);
+      bg.setAttribute("height", 13);
+      bg.setAttribute("class", "conc-label-bg");
+      concGroup.appendChild(bg);
+      const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      txt.setAttribute("x", pos.x);
+      txt.setAttribute("y", pos.y + 2);
+      txt.setAttribute("text-anchor", "middle");
+      txt.setAttribute("class", "conc-label-text");
+      txt.setAttribute("fill", color);
+      txt.textContent = text;
+      concGroup.appendChild(txt);
+    });
+  }
 }
 
 // ============================================================
@@ -2019,7 +2098,8 @@ function showOrganTooltip(svgId, organKey, event) {
         const drug = getDrugData(d.drugId);
         const pct = Math.round(d.intensity * 100);
         const c = DRUG_COLORS_RGB[d.localIdx % DRUG_COLORS_RGB.length];
-        return `<div class="ott-drug" style="color:rgba(${c.r},${c.g},${c.b},1)">${drug?.name || d.drugId}: <strong>${pct}%</strong> of peak</div>`;
+        const conc = d.concentration.toFixed(1);
+        return `<div class="ott-drug" style="color:rgba(${c.r},${c.g},${c.b},1)">${drug?.name || d.drugId}: <strong>${conc} ng/mL</strong> (${pct}% of peak)</div>`;
       })
       .join("");
     const dangerNote = snap.isDanger
@@ -3519,10 +3599,19 @@ function resetAll() {
 
   document.querySelectorAll(".organ").forEach((el) => {
     el.className = "organ";
+    el.style.fill = "";
+    el.style.stroke = "";
+    el.style.strokeWidth = "";
+    el.style.filter = "";
     el.style.opacity = "";
+    el.style.animationDuration = "";
   });
   document.getElementById("organLegend").innerHTML =
     '<p class="placeholder-text">Select drugs and run simulation to see body distribution.</p>';
+  const labelsG = document.getElementById("organLabelsGroup");
+  if (labelsG) labelsG.style.display = "none";
+  const concG = document.getElementById("concLabelsGroup");
+  if (concG) { concG.style.display = "none"; concG.innerHTML = ""; }
 
   initChart();
   addDrugSlot();
